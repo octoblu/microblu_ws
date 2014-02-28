@@ -69,8 +69,8 @@ void setup()
   }else
   {
     Serial.println(F("Connected!"));
-	Serial.println(skynetclient->uuid);
-	Serial.println(skynetclient->token);
+	Serial.println(skynetclient.uuid);
+	Serial.println(skynetclient.token);
   }
 }
 
