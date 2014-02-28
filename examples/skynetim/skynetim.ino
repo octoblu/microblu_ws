@@ -26,6 +26,7 @@
  * #define SKYNETCLIENT_DEBUG
  */
 
+#include <utility/w5100.h>
 #include <EEPROM.h>
 #include <aJSON.h>
 #include "Ethernet.h"
@@ -53,6 +54,8 @@ void setup()
       ;
   }
   
+  W5100.setRetransmissionTime(0x7D);
+  
   // print your local IP address:
   Serial.print(F("My IP address: "));
   for (byte thisByte = 0; thisByte < 4; thisByte++) {
@@ -63,15 +66,16 @@ void setup()
   Serial.println();
   
   skynetclient.setMessageDelegate(onMessage);
-  if (!skynetclient.connect(hostname, port)){ 
-    Serial.println(F("Not connected :("));
-    while(1); //no use in moving on
-  }else
-  {
+
+  bool status;
+  do {
+    status=skynetclient.connect(hostname, port);
+  }while(!status);
+  
     Serial.println(F("Connected!"));
 	Serial.println(skynetclient.uuid);
 	Serial.println(skynetclient.token);
-  }
+
 }
 
 aJsonObject *msg;
