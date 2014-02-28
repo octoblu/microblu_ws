@@ -2,7 +2,7 @@
 #include <SkynetClient.h>
 
 EthernetClient client;
-aJsonStream serial_stream(&client);
+aJsonClientStream serial_stream(&client);
 
 // struct ring_buffer
 // {
@@ -78,6 +78,8 @@ void SkynetClient::monitor() {
 		
 		case '1':
 		//TODO ugly hack
+		client.read();
+		client.read();
 		client.read();
 		client.read();
 		client.read();

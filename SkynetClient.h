@@ -85,7 +85,6 @@ class SkynetClient  {
 	private:
 	    ring_buffer *_rx_buffer;
 	    ring_buffer *_tx_buffer;		
-        EthernetClient client;
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];
