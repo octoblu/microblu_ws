@@ -32,11 +32,25 @@ SkynetClient::SkynetClient(){
 
 int SkynetClient::connect(const char* thehostname, uint16_t theport) {
 	// _rx_buffer = &socket_rx_buffer;
-	if (!client.connect(thehostname, theport)) return false;
 	hostname = thehostname;
 	port = theport;
-	sendHandshake(hostname);
-	return readHandshake();
+		
+	//connect tcp or fail
+	if (!client.connect(thehostname, theport)) 
+		return false;
+
+	//establish socket or fail
+	sendHandshake(thehostname);
+	if(!readHandshake()){
+		stop();
+		return false;
+	}
+	
+	//monitor to initiate communications with skynet TODO some fail condition
+	while(!status)
+		monitor();
+	
+	return status;
 }
 
 //TODO	
@@ -55,48 +69,52 @@ uint8_t SkynetClient::connected() {
 }
 
 void SkynetClient::stop() {
+	status = 0;
 	client.stop();
 }
 
-void SkynetClient::monitor() {
-					
-	if (!client.connected()) {
-		if (!client.connect(hostname, port)) return;
+void SkynetClient::dump(int x){
+
+	while ( client.available() && x>0 ){
+		client.read();
+		x--;
 	}
+	
+}
+void SkynetClient::monitor() {
 
-	if (!client.available()) return;
-
-	char which = client.read(); //dump NULL char
-	which = client.read(); // message type TODO hacky, what if not available?
-	DBGC(F("Message Type: "));
-	DBGC(which);
-	DBGCN();
-	switch (which) {	
+	char which = 0;
+	
+	//we need characters, and the first should be a null char
+	if(!client.available() || client.read()!=0)
+		return;
+	
+	if(client.available())
+		which = client.read();
+	
+	switch (which) {
+		//disconnect	
 		case '0':
-		status = 0;
+			stop();
 		break;
 		
+		//messages
 		case '1':
-		//TODO ugly hack
-		client.read();
-		client.read();
-		client.read();
-		client.read();
-		client.read();
-		status = 1;
+			status = 1;
+			//kill 5 chars
+			dump(5); 
+
 		case '3':	
 		case '5':	
 
 			//kill 3 chars
-			for (int i = 0; i<3 && client.available(); i++){
-				client.read();
-			}
+			dump(3); 
 			
 			process();
 			break;
 			
-			
-		case '2':		// heartbeat: [2::]
+		//hearbeat
+		case '2':
 			client.print((char)0);
 			client.print(F("2::"));
 			client.print((char)255);
@@ -104,17 +122,19 @@ void SkynetClient::monitor() {
 			break;
 
 		default: 
-			DBGCN(F("Drop "));
+			DBGC(F("Drop: "));
+			DBGCN(which);
+
 			break;
 	}
+	
 	client.flush();
-
 }
 
 void SkynetClient::process()
 {
   if (serial_stream.available()) {
-
+	  
     msg = aJson.parse(&serial_stream);
 	
     temp = aJson.getObjectItem(msg, NAME);

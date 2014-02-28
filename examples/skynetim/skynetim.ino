@@ -54,6 +54,7 @@ void setup()
       ;
   }
   
+  //decrease tcp timeout, fail quicker so we can get on with things
   W5100.setRetransmissionTime(0x7D);
   
   // print your local IP address:
@@ -73,8 +74,10 @@ void setup()
   }while(!status);
   
     Serial.println(F("Connected!"));
-	Serial.println(skynetclient.uuid);
-	Serial.println(skynetclient.token);
+    Serial.print("uuid: ");
+    Serial.println(skynetclient.uuid);
+    Serial.print("token: ");
+    Serial.println(skynetclient.token);
 
 }
 
