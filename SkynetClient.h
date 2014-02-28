@@ -2,7 +2,8 @@
 #define _SKYNETCLIENT_H
 
 #include "Arduino.h"
-#include <Ethernet.h>
+// #include <Ethernet.h>
+#include <WiFi.h>
 #include "SPI.h"
 #include "Client.h"
 #include <EEPROM.h>
@@ -22,7 +23,6 @@
 #define UUID "uuid"
 #define TOKEN "token"
 #define MESSAGE "message"
-#define DEVICES "devices"
 #define EMIT "5:::"
 #define FROMUUID "fromUuid"
 #define DATA "data"

@@ -1,7 +1,8 @@
 
 #include <SkynetClient.h>
 
-EthernetClient client;
+// EthernetClient client;
+WiFiClient client;
 aJsonClientStream serial_stream(&client);
 
 // struct ring_buffer
