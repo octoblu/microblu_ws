@@ -2,7 +2,9 @@
 #define _SKYNETCLIENT_H
 
 #include "Arduino.h"
-#include <Ethernet.h>
+#include <Adafruit_CC3000.h>
+#include <ccspi.h>
+// #include <Ethernet.h>
 #include "SPI.h"
 #include "Client.h"
 #include <EEPROM.h>

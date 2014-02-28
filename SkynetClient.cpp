@@ -1,7 +1,8 @@
 
 #include <SkynetClient.h>
 
-EthernetClient client;
+// EthernetClient client;
+Adafruit_CC3000_Client client;
 aJsonClientStream serial_stream(&client);
 
 // struct ring_buffer
