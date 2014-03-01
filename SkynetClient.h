@@ -90,9 +90,9 @@ class SkynetClient  {
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];
-		const char *hostname;
-		int port;
-        void sendHandshake(const char hostname[]);
+		IPAddress theip;
+		int theport;
+        void sendHandshake();
         int readHandshake();
 		int readLine();
 		bool waitForInput(void);

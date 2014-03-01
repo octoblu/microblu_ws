@@ -31,17 +31,26 @@ aJsonClientStream serial_stream(&client);
 SkynetClient::SkynetClient(){
 }
 
-int SkynetClient::connect(const char* thehostname, uint16_t theport) {
-	// _rx_buffer = &socket_rx_buffer;
-	hostname = thehostname;
-	port = theport;
-		
+int SkynetClient::connect(const char* host, uint16_t port) {
+	IPAddress remote_addr;
+	if (WiFi.hostByName(host, remote_addr))
+	{
+		return connect(remote_addr, port);
+	}
+}
+
+int SkynetClient::connect(IPAddress ip, uint16_t port) {
+
+	// _rx_buffer = &s	ocket_rx_buffer;
+	theip = ip;
+	theport = port;
+
 	//connect tcp or fail
-	if (!client.connect(thehostname, theport)) 
+	if (!client.connect(theip, theport)) 
 		return false;
 
 	//establish socket or fail
-	sendHandshake(thehostname);
+	sendHandshake();
 	if(!readHandshake()){
 		stop();
 		return false;
@@ -52,17 +61,6 @@ int SkynetClient::connect(const char* thehostname, uint16_t theport) {
 		monitor();
 	
 	return status;
-}
-
-//TODO	
-int SkynetClient::connect(IPAddress ip, uint16_t port) {
-	// //look up host from ip?
-	// if (!client.connect(thehostname, theport)) return false;
-	// hostname = thehostname;
-	// port = theport;
-	// sendHandshake(hostname);
-	// return readHandshake();
-	return 0;
 }
 
 uint8_t SkynetClient::connected() {
@@ -83,7 +81,6 @@ void SkynetClient::dump(int x){
 	
 }
 void SkynetClient::monitor() {
-
 	char which = 0;
 	
 	//we need characters, and the first should be a null char
@@ -282,10 +279,10 @@ void SkynetClient::process()
   
 }
 
-void SkynetClient::sendHandshake(const char hostname[]) {
+void SkynetClient::sendHandshake() {
 	client.println(F("GET /socket.io/1/ HTTP/1.1"));
 	client.print(F("Host: "));
-	client.println(hostname);
+	client.println(theip);
 	client.println(F("Origin: Arduino\r\n"));
 }
 
@@ -331,7 +328,7 @@ int SkynetClient::readHandshake() {
 
 	// reconnect on websocket connection
 	DBGCN(F("WS Connect..."));
-	if (!client.connect(hostname, port)) {
+	if (!client.connect(theip, theport)) {
 		DBGCN(F("Reconnect failed."));
 		return 0;
 	}
@@ -341,7 +338,7 @@ int SkynetClient::readHandshake() {
 	client.print(sid);
 	client.println(F(" HTTP/1.1"));
 	client.print(F("Host: "));
-	client.println(hostname);
+	client.println(theip);
 	client.println(F("Origin: ArduinoSkynetClient"));
 	client.println(F("Upgrade: WebSocket"));	// must be camelcase ?!
 	client.println(F("Connection: Upgrade\r\n"));

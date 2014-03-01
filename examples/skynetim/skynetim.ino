@@ -93,7 +93,8 @@ void onMessage(aJsonObject *data){
   if (strcmp(msg->name, FROMUUID) == 0){
     Serial.print(F("return address:"));
     Serial.println(msg->valuestring);
-    skynetclient.sendMessage(msg->valuestring, "Thanks!");
+    
+    skynetclient.sendMessage(msg->valuestring, data);
   }
 }
 
