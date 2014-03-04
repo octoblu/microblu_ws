@@ -93,15 +93,19 @@ void setup()
 
 }
 
-aJsonObject *msg;
+aJsonObject *msg, *color;
 
 void onMessage(aJsonObject *data){
-  //parse or print your message
+  //print your message
   Serial.println(aJson.print(data));
   
-  msg = aJson.getObjectItem(data, RED);
-  if (msg != NULL) {
-    if(strcmp(msg->valuestring, ON) == 0){
+  //or parse it
+  msg = aJson.getObjectItem(data, MESSAGE);
+  Serial.println(aJson.print(msg));
+  
+  color = aJson.getObjectItem(msg, RED);
+  if (color != NULL) {
+    if(strcmp(color->valuestring, ON) == 0){
       Serial.println("red on");
       digitalWrite(REDLED, HIGH);
     }else{
@@ -110,9 +114,9 @@ void onMessage(aJsonObject *data){
     }
   }
   
-  msg = aJson.getObjectItem(data, BLUE);
-  if (msg != NULL) {
-    if(strcmp(msg->valuestring, ON) == 0){
+  color = aJson.getObjectItem(msg, BLUE);
+  if (color != NULL) {
+    if(strcmp(color->valuestring, ON) == 0){
       Serial.println("blue on");
       digitalWrite(BLUELED, HIGH);
     }else{
@@ -121,9 +125,9 @@ void onMessage(aJsonObject *data){
     }
   }
   
-  msg = aJson.getObjectItem(data, GREEN);
-  if (msg != NULL) {
-    if(strcmp(msg->valuestring, ON) == 0){
+  color = aJson.getObjectItem(msg, GREEN);
+  if (color != NULL) {
+    if(strcmp(color->valuestring, ON) == 0){
       Serial.println("green off");
       digitalWrite(GREENLED, HIGH);
     }else{
