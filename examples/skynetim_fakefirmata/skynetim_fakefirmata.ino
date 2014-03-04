@@ -33,10 +33,6 @@
 #include "SPI.h"
 #include "SkynetClient.h"
 
-#define RED "red"
-#define BLUE "blue"
-#define GREEN "green"
-
 //for uno avoid pins 10 11 12 13 plus if you're using sd card 4, and additionally pin 7 if wifi
 //for mega avoid pins 50 51 52 53 plus if you're using sd card 4 and additionally pin 47 if wifi
 #define REDLED 3
@@ -103,35 +99,35 @@ void onMessage(aJsonObject *data){
   msg = aJson.getObjectItem(data, MESSAGE);
   Serial.println(aJson.print(msg));
   
-  color = aJson.getObjectItem(msg, RED);
+  color = aJson.getObjectItem(msg, "red");
   if (color != NULL) {
     if(strcmp(color->valuestring, ON) == 0){
-      Serial.println("red on");
+      Serial.println(F("red on"));
       digitalWrite(REDLED, HIGH);
     }else{
-      Serial.println("red off");
+      Serial.println(F("red off"));
       digitalWrite(REDLED, LOW);
     }
   }
   
-  color = aJson.getObjectItem(msg, BLUE);
+  color = aJson.getObjectItem(msg, "blue");
   if (color != NULL) {
     if(strcmp(color->valuestring, ON) == 0){
-      Serial.println("blue on");
+      Serial.println(F("blue on"));
       digitalWrite(BLUELED, HIGH);
     }else{
-      Serial.println("blue off");
+      Serial.println(F("blue off"));
       digitalWrite(BLUELED, LOW);
     }
   }
   
-  color = aJson.getObjectItem(msg, GREEN);
+  color = aJson.getObjectItem(msg, "green");
   if (color != NULL) {
     if(strcmp(color->valuestring, ON) == 0){
-      Serial.println("green off");
+      Serial.println(F("green off"));
       digitalWrite(GREENLED, HIGH);
     }else{
-      Serial.println("green off");
+      Serial.println(F("green off"));
       digitalWrite(GREENLED, LOW);
     }
   }
