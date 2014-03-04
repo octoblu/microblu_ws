@@ -257,14 +257,16 @@ void SkynetClient::process()
     }
     else if (strcmp(temp->valuestring, MESSAGE) == 0)
     {
-      //arg0 is recipient (us), could check against our uuid, or find * and know it was broadcast
-      //grab arg1 and read as base64
-      //arg2 if available is who sent
-      DBGCN(MESSAGE);
-      
-      parsedArgsZero = aJson.getArrayItem(parsedArgs, 1);
-      DBGC(F("message: "));
-      DBGCN(aJson.print(parsedArgsZero));
+      //its an array, with a single object inside
+	  //including devices, message, api, fromUuid, timestamp, eventCode, _id
+	  
+      DBGC(MESSAGE);
+      DBGC(": ");
+      DBGCN(aJson.print(parsedArgs));
+	  
+      parsedArgsZero = aJson.getArrayItem(parsedArgs, 0);
+
+      args = aJson.getObjectItem(parsedArgsZero, MESSAGE);
 	  
 		if (messageDelegate != NULL) {
 			messageDelegate(parsedArgsZero);

@@ -81,19 +81,24 @@ void setup()
 
 }
 
-aJsonObject *msg;
+aJsonObject *msg, *fromUuid;
 
 void onMessage(aJsonObject *data){
-  //parse or print your message
+  //print your message
   Serial.println(aJson.print(data));
   
-  msg = aJson.getObjectItem(data, FROMUUID);
+  //or parse it
+  msg = aJson.getObjectItem(data, MESSAGE);
+  Serial.println(aJson.print(msg));
+  
+  fromUuid = aJson.getObjectItem(data, FROMUUID);
   
   //Lets echo back if there was a fromuuid
-  if (strcmp(msg->name, FROMUUID) == 0){
+  if (strcmp(fromUuid->name, FROMUUID) == 0){
     Serial.print(F("return address:"));
-    Serial.println(msg->valuestring);
-    skynetclient.sendMessage(msg->valuestring, "Thanks!");
+    Serial.println(fromUuid->valuestring);
+
+    skynetclient.sendMessage(fromUuid->valuestring, "Thanks!");
   }
 }
 
