@@ -33,11 +33,10 @@
 #include "SPI.h"
 #include "SkynetClient.h"
 
-//for uno avoid pins 10 11 12 13 plus if you're using sd card 4, and additionally pin 7 if wifi
-//for mega avoid pins 50 51 52 53 plus if you're using sd card 4 and additionally pin 47 if wifi
-#define REDLED 3
-#define BLUELED 4
-#define GREENLED 5
+//avoid pins 10 11 12 13 plus if you're using sd card 4, and additionally pin 7 if wifi
+#define REDLED 6
+#define BLUELED 5
+#define GREENLED 4
 
 #define ON "on"
 
@@ -50,6 +49,11 @@ int port = 80;
 
 void setup()
 {
+  
+  pinMode(REDLED, OUTPUT);
+  pinMode(GREENLED, OUTPUT);
+  pinMode(BLUELED, OUTPUT);
+  
   //delay to give you time to open a console so we don't hammer server
   delay(5000);
   Serial.begin(9600);

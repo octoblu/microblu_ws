@@ -88,7 +88,7 @@ void onMessage(aJsonObject *data){
   Serial.println(aJson.print(data));
   
   //or parse it
-  msg = aJson.getObjectItem(data, MESSAGE);
+  msg = aJson.getObjectItem(data, PAYLOAD);
   Serial.println(aJson.print(msg));
   
   fromUuid = aJson.getObjectItem(data, FROMUUID);

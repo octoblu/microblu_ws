@@ -155,20 +155,24 @@ void SkynetClient::process()
   
       DBGC(F("socketid: "));
       DBGCN(temp->valuestring);
-
-      eeprom_read_bytes(token, TOKENADDRESS, TOKENSIZE);
-      token[TOKENSIZE-1]='\0'; //in case courrupted or not defined
-      DBGC(F("token loaded from eeprom: "));
-      DBGCN(token);
+	  
+	  Serial.println(eeprom_read_byte((uint8_t*)EEPROMBLOCKADDRESS));
+	  if( eeprom_read_byte( (uint8_t*)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
+	  {
+	      eeprom_read_bytes(token, TOKENADDRESS, TOKENSIZE);
+	      token[TOKENSIZE-1]='\0'; //in case courrupted or not defined
+	      DBGC(F("token loaded from eeprom: "));
+	      DBGCN(token);
       
-      eeprom_read_bytes(uuid, UUIDADDRESS, UUIDSIZE);
-      uuid[UUIDSIZE-1]='\0'; //in case courrupted or not defined
-      DBGC(F("uuid loaded from eeprom: "));
-      DBGCN(uuid);
+	      eeprom_read_bytes(uuid, UUIDADDRESS, UUIDSIZE);
+	      uuid[UUIDSIZE-1]='\0'; //in case courrupted or not defined
+	      DBGC(F("uuid loaded from eeprom: "));
+	      DBGCN(uuid);
 
-      aJson.addStringToObject(args, SOCKETID, temp->valuestring);
-      aJson.addStringToObject(args, UUID, uuid);
-      aJson.addStringToObject(args, TOKEN, token);
+	      aJson.addStringToObject(args, SOCKETID, temp->valuestring);
+	      aJson.addStringToObject(args, UUID, uuid);
+	      aJson.addStringToObject(args, TOKEN, token);
+  	  }
       
       aJson.addItemToArray(argsArray,args);
       aJson.addStringToObject(reply, NAME, IDENTITY);
@@ -202,6 +206,8 @@ void SkynetClient::process()
         DBGC(F("new: "));
         DBGCN(temp->valuestring);
         eeprom_write_bytes(temp->valuestring, TOKENADDRESS, TOKENSIZE);
+      	eeprom_write_byte((uint8_t *)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK);
+
       }else
       {
         DBGCN(F("no token refresh necessary"));
@@ -465,25 +471,41 @@ void SkynetClient::eeprom_read_bytes(char *buf, int address, int bufSize){
 }
 
 void SkynetClient::sendMessage(char *device, aJsonObject *object){
-  aJsonObject *root=aJson.createObject();
-  
-  aJson.addStringToObject(root, DEVICES, device);
-  aJson.addItemToObject(root, MESSAGE, object);
+    msg=aJson.createObject();
 
-  DBGC(F("Sending: "));
-  DBGCN(aJson.print(root));
-  send(EMIT, aJson.print(root));
-//  aJson.deleteItem(root);
+    aJson.addStringToObject(msg, NAME, MESSAGE);
+
+    args=aJson.createObject();
+  
+    aJson.addStringToObject(args, DEVICES, device);
+    aJson.addItemToObject(args, PAYLOAD, object);
+  
+    argsArray=aJson.createArray();
+    aJson.addItemToArray(argsArray,args);
+  
+    aJson.addItemToObject(msg, ARGS, argsArray);
+  
+    DBGC(F("Sending: "));
+    DBGCN(aJson.print(msg));
+    send(EMIT, aJson.print(msg));
 }
 
 void SkynetClient::sendMessage(char *device, char *object){
-  aJsonObject *root=aJson.createObject();
+  msg=aJson.createObject();
+
+  aJson.addStringToObject(msg, NAME, MESSAGE);
+
+  args=aJson.createObject();
   
-  aJson.addStringToObject(root, DEVICES, device);
-  aJson.addStringToObject(root, MESSAGE, object);
+  aJson.addStringToObject(args, DEVICES, device);
+  aJson.addStringToObject(args, PAYLOAD, object);
+  
+  argsArray=aJson.createArray();
+  aJson.addItemToArray(argsArray,args);
+  
+  aJson.addItemToObject(msg, ARGS, argsArray);
 
   DBGC(F("Sending: "));
-  DBGCN(aJson.print(root));
-  send(EMIT, aJson.print(root));
-//  aJson.deleteItem(root);
+  DBGCN(aJson.print(msg));
+  send(EMIT, aJson.print(msg));
 }

@@ -7,6 +7,7 @@
 #include "Client.h"
 #include <EEPROM.h>
 #include <aJSON.h>
+#include <avr/eeprom.h>
 
 
 #define NAME "name"
@@ -22,6 +23,7 @@
 #define UUID "uuid"
 #define TOKEN "token"
 #define MESSAGE "message"
+#define PAYLOAD "payload"
 #define DEVICES "devices"
 #define EMIT "5:::"
 #define FROMUUID "fromUuid"
@@ -29,7 +31,9 @@
 
 #define UUIDSIZE 37
 #define TOKENSIZE 33
-#define TOKENADDRESS 71
+#define EEPROMBLOCKADDRESS 0
+#define EEPROMBLOCK 'S'
+#define TOKENADDRESS 1
 #define UUIDADDRESS TOKENADDRESS+TOKENSIZE
 
 // Length of static data buffers
