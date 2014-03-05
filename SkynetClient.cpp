@@ -98,7 +98,6 @@ void SkynetClient::monitor() {
 		
 		//messages
 		case '1':
-			status = 1;
 			//kill 5 chars
 			dump(5); 
 
@@ -184,6 +183,8 @@ void SkynetClient::process()
     else if (strcmp(temp->valuestring, READY) == 0)
     {
       DBGCN(READY);
+	  status = 1;
+
       parsedArgsZero = aJson.getArrayItem(parsedArgs, 0);
 
       temp = aJson.getObjectItem(parsedArgsZero, TOKEN);
@@ -323,16 +324,16 @@ int SkynetClient::readHandshake() {
 	DBGCN(sid);	// sid:transport:timeout 
 
 	while (client.available()) readLine();
-	client.stop();
-	delay(1000);
-
-	// reconnect on websocket connection
-	DBGCN(F("WS Connect..."));
-	if (!client.connect(theip, theport)) {
-		DBGCN(F("Reconnect failed."));
-		return 0;
-	}
-	DBGCN(F("Reconnected."));
+	// client.stop();
+	// delay(1000);
+	// 
+	// // reconnect on websocket connection
+	// DBGCN(F("WS Connect..."));
+	// if (!client.connect(theip, theport)) {
+	// 	DBGCN(F("Reconnect failed."));
+	// 	return 0;
+	// }
+	// DBGCN(F("Reconnected."));
 
 	client.print(F("GET /socket.io/1/websocket/"));
 	client.print(sid);
