@@ -1,8 +1,13 @@
 
 #include <SkynetClient.h>
 
-// EthernetClient client;
+
+#include <WiFi.h>
 WiFiClient client;
+
+// #include <Ethernet.h>
+// EthernetClient client;
+
 aJsonClientStream serial_stream(&client);
 
 // struct ring_buffer
@@ -383,9 +388,24 @@ int SkynetClient::readLine() {
 }
 
 void SkynetClient::send(char *encoding, char *data) {
+    DBGC(F("Sending: "));
+
+    DBGC((char)0);
 	client.print((char)0);
+
+    DBGC(encoding);	
 	client.print(encoding);
-	client.print(data);
+	
+	//wifi client.print has a buffer that so far we've been unable to locate
+	//under 154 (our identify size) for sure.. so sending char by char for now
+	int i = 0;
+	while ( data[i] != '\0' )
+	{
+	    DBGC(data[i]);
+		client.print(data[i++]);
+	}
+
+    DBGCN((char)255);
 	client.print((char)255);
 }
 

@@ -2,8 +2,6 @@
 #define _SKYNETCLIENT_H
 
 #include "Arduino.h"
-// #include <Ethernet.h>
-#include <WiFi.h>
 #include "SPI.h"
 #include "Client.h"
 #include <EEPROM.h>
