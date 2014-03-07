@@ -12,7 +12,7 @@ aJsonClientStream serial_stream(&client);
 
 struct ring_buffer
 {
-  unsigned char buffer[SERIAL_BUFFER_SIZE];
+  unsigned char buffer[SKYNET_BUFFER_SIZE];
   volatile unsigned int head;
   volatile unsigned int tail;
 };
@@ -21,7 +21,7 @@ ring_buffer socket_rx_buffer =    { { 0 }, 0, 0};
 
 inline void store_char(unsigned char c, ring_buffer *buffer)
 {
-  int i = (unsigned int)(buffer->head + 1) % SERIAL_BUFFER_SIZE;
+  int i = (unsigned int)(buffer->head + 1) % SKYNET_BUFFER_SIZE;
 
   // if we should be storing the received character into the location
   // just before the tail (meaning that the head would advance to the
@@ -421,7 +421,8 @@ size_t SkynetClient::write(const uint8_t *buf, size_t size) {
 }
 
 int SkynetClient::available() {
-  return (unsigned int)(SERIAL_BUFFER_SIZE + _rx_buffer->head - _rx_buffer->tail) % SERIAL_BUFFER_SIZE;
+  return (unsigned int)(SKYNET_BUFFER_SIZE + _rx_buffer->head - _rx_buffer->tail) % SKYNET_BUFFER_SIZE
+	  ;
 }
 
 int SkynetClient::read() {
@@ -430,7 +431,7 @@ int SkynetClient::read() {
       return -1;
     } else {
       unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
-      _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SERIAL_BUFFER_SIZE;
+      _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SKYNET_BUFFER_SIZE;
       return c;
     }
 }
@@ -442,7 +443,7 @@ int SkynetClient::read(uint8_t *buf, size_t size) {
     //   return -1;
     // } else {
     //   unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
-    //   _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SERIAL_BUFFER_SIZE;
+    //   _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SKYNET_BUFFER_SIZE;
     //   return c;
     // }
 	return 0;

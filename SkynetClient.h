@@ -48,11 +48,11 @@
 #define DBGC( ... )
 #endif
 
-// #if (RAMEND < 1000)
-//   #define SERIAL_BUFFER_SIZE 200
-// #else
-//   #define SERIAL_BUFFER_SIZE 200
-// #endif
+#if (RAMEND < 1000)
+  #define SKYNET_BUFFER_SIZE 200
+#else
+  #define SKYNET_BUFFER_SIZE 200
+#endif
 struct ring_buffer;
 
 class SkynetClient  {
