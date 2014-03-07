@@ -102,10 +102,11 @@ void setup()
 aJsonObject *msg, *fromUuid;
 
 void onMessage(aJsonObject *data){
-  //print your message
-  Serial.println(aJson.print(data));
+  //print your message from skynet buffer
+  while(skynetclient.available())
+    Serial.print((char)skynetclient.read());
   
-  //or parse it
+  //or parse out entire data structure
   msg = aJson.getObjectItem(data, PAYLOAD);
   Serial.println(aJson.print(msg));
   

@@ -10,28 +10,28 @@ EthernetClient client;
 
 aJsonClientStream serial_stream(&client);
 
-// struct ring_buffer
-// {
-//   unsigned char buffer[SERIAL_BUFFER_SIZE];
-//   volatile unsigned int head;
-//   volatile unsigned int tail;
-// };
-// 
-// ring_buffer socket_rx_buffer =    { { 0 }, 0, 0};
-// 
-// inline void store_char(unsigned char c, ring_buffer *buffer)
-// {
-//   int i = (unsigned int)(buffer->head + 1) % SERIAL_BUFFER_SIZE;
-// 
-//   // if we should be storing the received character into the location
-//   // just before the tail (meaning that the head would advance to the
-//   // current location of the tail), we're about to overflow the buffer
-//   // and so we don't write the character or advance the head.
-//   if (i != buffer->tail) {
-//     buffer->buffer[buffer->head] = c;
-//     buffer->head = i;
-//   }
-// }
+struct ring_buffer
+{
+  unsigned char buffer[SERIAL_BUFFER_SIZE];
+  volatile unsigned int head;
+  volatile unsigned int tail;
+};
+
+ring_buffer socket_rx_buffer =    { { 0 }, 0, 0};
+
+inline void store_char(unsigned char c, ring_buffer *buffer)
+{
+  int i = (unsigned int)(buffer->head + 1) % SERIAL_BUFFER_SIZE;
+
+  // if we should be storing the received character into the location
+  // just before the tail (meaning that the head would advance to the
+  // current location of the tail), we're about to overflow the buffer
+  // and so we don't write the character or advance the head.
+  if (i != buffer->tail) {
+    buffer->buffer[buffer->head] = c;
+    buffer->head = i;
+  }
+}
 
 SkynetClient::SkynetClient(){
 }
@@ -46,7 +46,7 @@ int SkynetClient::connect(const char* host, uint16_t port) {
 
 int SkynetClient::connect(IPAddress ip, uint16_t port) {
 
-	// _rx_buffer = &s	ocket_rx_buffer;
+	_rx_buffer = &socket_rx_buffer;
 	theip = ip;
 	theport = port;
 
@@ -270,11 +270,19 @@ void SkynetClient::process()
 	  
       parsedArgsZero = aJson.getArrayItem(parsedArgs, 0);
 
-      args = aJson.getObjectItem(parsedArgsZero, MESSAGE);
+      args = aJson.getObjectItem(parsedArgsZero, PAYLOAD);
 	  
-		if (messageDelegate != NULL) {
-			messageDelegate(parsedArgsZero);
-		}
+	  char *buf = aJson.print(args);
+	  
+      DBGCN(buf);
+	  
+	  int i=0;
+	  while(buf!=NULL && buf[i] != '\0' )
+		  store_char(buf[i++], &socket_rx_buffer);
+	  
+	  if (messageDelegate != NULL) {
+		  messageDelegate(parsedArgsZero);
+	  }
     }
     else
     {
@@ -412,41 +420,41 @@ size_t SkynetClient::write(const uint8_t *buf, size_t size) {
   return client.write(buf, size);
 }
 
-// int SkynetClient::available() {
-//   return (unsigned int)(SERIAL_BUFFER_SIZE + _rx_buffer->head - _rx_buffer->tail) % SERIAL_BUFFER_SIZE;
-// }
+int SkynetClient::available() {
+  return (unsigned int)(SERIAL_BUFFER_SIZE + _rx_buffer->head - _rx_buffer->tail) % SERIAL_BUFFER_SIZE;
+}
 
-// int SkynetClient::read() {
-//     // if the head isn't ahead of the tail, we don't have any characters
-//     if (_rx_buffer->head == _rx_buffer->tail) {
-//       return -1;
-//     } else {
-//       unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
-//       _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SERIAL_BUFFER_SIZE;
-//       return c;
-//     }
-// }
+int SkynetClient::read() {
+    // if the head isn't ahead of the tail, we don't have any characters
+    if (_rx_buffer->head == _rx_buffer->tail) {
+      return -1;
+    } else {
+      unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
+      _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SERIAL_BUFFER_SIZE;
+      return c;
+    }
+}
 
-// //TODO	
-// int SkynetClient::read(uint8_t *buf, size_t size) {
-//     // // if the head isn't ahead of the tail, we don't have any characters
-//     // if (_rx_buffer->head == _rx_buffer->tail) {
-//     //   return -1;
-//     // } else {
-//     //   unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
-//     //   _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SERIAL_BUFFER_SIZE;
-//     //   return c;
-//     // }
-// 	return 0;
-// }
+//TODO	
+int SkynetClient::read(uint8_t *buf, size_t size) {
+    // // if the head isn't ahead of the tail, we don't have any characters
+    // if (_rx_buffer->head == _rx_buffer->tail) {
+    //   return -1;
+    // } else {
+    //   unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
+    //   _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SERIAL_BUFFER_SIZE;
+    //   return c;
+    // }
+	return 0;
+}
 
-// int SkynetClient::peek() {
-//     if (_rx_buffer->head == _rx_buffer->tail) {
-//       return -1;
-//     } else {
-//       return _rx_buffer->buffer[_rx_buffer->tail];
-//     }
-// }
+int SkynetClient::peek() {
+    if (_rx_buffer->head == _rx_buffer->tail) {
+      return -1;
+    } else {
+      return _rx_buffer->buffer[_rx_buffer->tail];
+    }
+}
 
 void SkynetClient::flush() {
   while (client.available())

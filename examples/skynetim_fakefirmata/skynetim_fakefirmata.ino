@@ -95,8 +95,9 @@ void setup()
 aJsonObject *msg, *color;
 
 void onMessage(aJsonObject *data){
-  //print your message
-  Serial.println(aJson.print(data));
+  //print your message from skynet buffer
+  while(skynetclient.available())
+	Serial.print((char)skynetclient.read());
   
   //or parse it
   msg = aJson.getObjectItem(data, PAYLOAD);
