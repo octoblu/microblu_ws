@@ -48,10 +48,9 @@ int SkynetClient::connect(IPAddress ip, uint16_t port) {
 
 	_rx_buffer = &socket_rx_buffer;
 	theip = ip;
-	theport = port;
 
 	//connect tcp or fail
-	if (!client.connect(theip, theport)) 
+	if (!client.connect(theip, port)) 
 		return false;
 
 	//establish socket or fail
@@ -99,7 +98,7 @@ void SkynetClient::monitor() {
 		//disconnect	
 		case '0':
 			stop();
-		break;
+			break;
 		
 		//messages
 		case '1':
@@ -117,10 +116,8 @@ void SkynetClient::monitor() {
 			
 		//hearbeat
 		case '2':
-			client.print((char)0);
-			client.print(F("2::"));
-			client.print((char)255);
 			DBGCN(F("Heartbeat"));
+			send(HEARTBEAT,"");
 			break;
 
 		default: 
@@ -412,12 +409,26 @@ void SkynetClient::send(char *encoding, char *data) {
 	client.print((char)255);
 }
 
-size_t SkynetClient::write(uint8_t b) {
-  return client.write(b);
-}
-
 size_t SkynetClient::write(const uint8_t *buf, size_t size) {
-  return client.write(buf, size);
+    DBGC(F("Sending: "));
+
+    DBGC((char)0);
+	client.print((char)0);
+
+    DBGC(EMIT);	
+	client.print(EMIT);
+	
+	//wifi client.print has a buffer that so far we've been unable to locate
+	//under 154 (our identify size) for sure.. so sending char by char for now
+	int i = 0;
+	while ( i < size )
+	{
+	    DBGC(buf[i]);
+		client.print(buf[i++]);
+	}
+
+    DBGCN((char)255);
+	client.print((char)255);
 }
 
 int SkynetClient::available() {
@@ -436,18 +447,9 @@ int SkynetClient::read() {
     }
 }
 
-//TODO	
-int SkynetClient::read(uint8_t *buf, size_t size) {
-    // // if the head isn't ahead of the tail, we don't have any characters
-    // if (_rx_buffer->head == _rx_buffer->tail) {
-    //   return -1;
-    // } else {
-    //   unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
-    //   _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SKYNET_BUFFER_SIZE;
-    //   return c;
-    // }
-	return 0;
-}
+// //TODO	
+// int SkynetClient::read(uint8_t *buf, size_t size) {
+// }
 
 int SkynetClient::peek() {
     if (_rx_buffer->head == _rx_buffer->tail) {
@@ -458,8 +460,7 @@ int SkynetClient::peek() {
 }
 
 void SkynetClient::flush() {
-  while (client.available())
-    client.read();
+	client.flush();
 }
 
 // the next function allows us to use the client returned by

@@ -25,6 +25,7 @@
 #define PAYLOAD "payload"
 #define DEVICES "devices"
 #define EMIT "5:::"
+#define HEARTBEAT "2::"
 #define FROMUUID "fromUuid"
 #define DATA "data"
 
@@ -67,33 +68,28 @@ class SkynetClient  {
 
 	    int connect(IPAddress ip, uint16_t port);
 	    int connect(const char *host, uint16_t port);
-	    size_t write(uint8_t);
 	    size_t write(const uint8_t *buf, size_t size);
 	    int available();
 	    int read();
-	    int read(uint8_t *buf, size_t size);
+	    // int read(uint8_t *buf, size_t size);
 	    int peek();
 	    void flush();
 	    void stop();
 	    uint8_t connected();
 	    operator bool();
-
-		void send(char *encoding, char *data);
-        void disconnect();
 		void monitor();
 		
 		char token[TOKENSIZE];
 		char uuid[UUIDSIZE];
 		
 	private:
-	    ring_buffer *_rx_buffer;
-	    ring_buffer *_tx_buffer;		
+	    ring_buffer *_rx_buffer;	
 		void dump(int x);
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];
 		IPAddress theip;
-		int theport;
+		void send(char *encoding, char *data);
         void sendHandshake();
         int readHandshake();
 		int readLine();
