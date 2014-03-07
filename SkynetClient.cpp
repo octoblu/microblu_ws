@@ -334,16 +334,6 @@ int SkynetClient::readHandshake() {
 	DBGCN(sid);	// sid:transport:timeout 
 
 	while (client.available()) readLine();
-	// client.stop();
-	// delay(1000);
-	// 
-	// // reconnect on websocket connection
-	// DBGCN(F("WS Connect..."));
-	// if (!client.connect(theip, theport)) {
-	// 	DBGCN(F("Reconnect failed."));
-	// 	return 0;
-	// }
-	// DBGCN(F("Reconnected."));
 
 	client.print(F("GET /socket.io/1/websocket/"));
 	client.print(sid);
