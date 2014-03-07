@@ -73,12 +73,11 @@ void setup()
     status=skynetclient.connect(hostname, port);
   }while(!status);
   
-    Serial.println(F("Connected!"));
-    Serial.print("uuid: ");
-    Serial.println(skynetclient.uuid);
-    Serial.print("token: ");
-    Serial.println(skynetclient.token);
-
+  Serial.println(F("Connected!"));
+  Serial.print("uuid: ");
+  Serial.println(skynetclient.uuid);
+  Serial.print("token: ");
+  Serial.println(skynetclient.token);
 }
 
 aJsonObject *msg, *fromUuid;

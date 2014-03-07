@@ -1,7 +1,13 @@
 
 #include <SkynetClient.h>
 
+
+// #include <WiFi.h>
+// WiFiClient client;
+
+#include <Ethernet.h>
 EthernetClient client;
+
 aJsonClientStream serial_stream(&client);
 
 // struct ring_buffer
@@ -30,17 +36,26 @@ aJsonClientStream serial_stream(&client);
 SkynetClient::SkynetClient(){
 }
 
-int SkynetClient::connect(const char* thehostname, uint16_t theport) {
-	// _rx_buffer = &socket_rx_buffer;
-	hostname = thehostname;
-	port = theport;
-		
+int SkynetClient::connect(const char* host, uint16_t port) {
+	IPAddress remote_addr;
+	if (WiFi.hostByName(host, remote_addr))
+	{
+		return connect(remote_addr, port);
+	}
+}
+
+int SkynetClient::connect(IPAddress ip, uint16_t port) {
+
+	// _rx_buffer = &s	ocket_rx_buffer;
+	theip = ip;
+	theport = port;
+
 	//connect tcp or fail
-	if (!client.connect(thehostname, theport)) 
+	if (!client.connect(theip, theport)) 
 		return false;
 
 	//establish socket or fail
-	sendHandshake(thehostname);
+	sendHandshake();
 	if(!readHandshake()){
 		stop();
 		return false;
@@ -51,17 +66,6 @@ int SkynetClient::connect(const char* thehostname, uint16_t theport) {
 		monitor();
 	
 	return status;
-}
-
-//TODO	
-int SkynetClient::connect(IPAddress ip, uint16_t port) {
-	// //look up host from ip?
-	// if (!client.connect(thehostname, theport)) return false;
-	// hostname = thehostname;
-	// port = theport;
-	// sendHandshake(hostname);
-	// return readHandshake();
-	return 0;
 }
 
 uint8_t SkynetClient::connected() {
@@ -82,7 +86,6 @@ void SkynetClient::dump(int x){
 	
 }
 void SkynetClient::monitor() {
-
 	char which = 0;
 	
 	//we need characters, and the first should be a null char
@@ -100,7 +103,6 @@ void SkynetClient::monitor() {
 		
 		//messages
 		case '1':
-			status = 1;
 			//kill 5 chars
 			dump(5); 
 
@@ -156,7 +158,7 @@ void SkynetClient::process()
       DBGC(F("socketid: "));
       DBGCN(temp->valuestring);
 	  
-	  Serial.println(eeprom_read_byte((uint8_t*)EEPROMBLOCKADDRESS));
+	  DBGCN(eeprom_read_byte((uint8_t*)EEPROMBLOCKADDRESS));
 	  if( eeprom_read_byte( (uint8_t*)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
 	  {
 	      eeprom_read_bytes(token, TOKENADDRESS, TOKENSIZE);
@@ -178,18 +180,14 @@ void SkynetClient::process()
       aJson.addStringToObject(reply, NAME, IDENTITY);
       aJson.addItemToObject(reply, ARGS, argsArray);
 
-      DBGC(F("Sending: "));
-      DBGCN(aJson.print(reply));
       send(EMIT, aJson.print(reply));
-
-////      aJson.deleteItem(reply);
-////      aJson.deleteItem(args);
-////      aJson.deleteItem(argsArray);
 
     } 
     else if (strcmp(temp->valuestring, READY) == 0)
     {
       DBGCN(READY);
+	  status = 1;
+
       parsedArgsZero = aJson.getArrayItem(parsedArgs, 0);
 
       temp = aJson.getObjectItem(parsedArgsZero, TOKEN);
@@ -282,6 +280,9 @@ void SkynetClient::process()
     {
       DBGC(F("Unknown:"));
       DBGCN(temp->valuestring);
+	  while(client.available())
+		  DBGC((char)client.read());
+	  DBGCN();
 
     }
 //    aJson.deleteItem(msg); //supposedly just delete the root and takes care of everything
@@ -289,10 +290,10 @@ void SkynetClient::process()
   
 }
 
-void SkynetClient::sendHandshake(const char hostname[]) {
+void SkynetClient::sendHandshake() {
 	client.println(F("GET /socket.io/1/ HTTP/1.1"));
 	client.print(F("Host: "));
-	client.println(hostname);
+	client.println(theip);
 	client.println(F("Origin: Arduino\r\n"));
 }
 
@@ -333,22 +334,22 @@ int SkynetClient::readHandshake() {
 	DBGCN(sid);	// sid:transport:timeout 
 
 	while (client.available()) readLine();
-	client.stop();
-	delay(1000);
-
-	// reconnect on websocket connection
-	DBGCN(F("WS Connect..."));
-	if (!client.connect(hostname, port)) {
-		DBGCN(F("Reconnect failed."));
-		return 0;
-	}
-	DBGCN(F("Reconnected."));
+	// client.stop();
+	// delay(1000);
+	// 
+	// // reconnect on websocket connection
+	// DBGCN(F("WS Connect..."));
+	// if (!client.connect(theip, theport)) {
+	// 	DBGCN(F("Reconnect failed."));
+	// 	return 0;
+	// }
+	// DBGCN(F("Reconnected."));
 
 	client.print(F("GET /socket.io/1/websocket/"));
 	client.print(sid);
 	client.println(F(" HTTP/1.1"));
 	client.print(F("Host: "));
-	client.println(hostname);
+	client.println(theip);
 	client.println(F("Origin: ArduinoSkynetClient"));
 	client.println(F("Upgrade: WebSocket"));	// must be camelcase ?!
 	client.println(F("Connection: Upgrade\r\n"));
@@ -392,9 +393,24 @@ int SkynetClient::readLine() {
 }
 
 void SkynetClient::send(char *encoding, char *data) {
+    DBGC(F("Sending: "));
+
+    DBGC((char)0);
 	client.print((char)0);
+
+    DBGC(encoding);	
 	client.print(encoding);
-	client.print(data);
+	
+	//wifi client.print has a buffer that so far we've been unable to locate
+	//under 154 (our identify size) for sure.. so sending char by char for now
+	int i = 0;
+	while ( data[i] != '\0' )
+	{
+	    DBGC(data[i]);
+		client.print(data[i++]);
+	}
+
+    DBGCN((char)255);
 	client.print((char)255);
 }
 
@@ -485,8 +501,6 @@ void SkynetClient::sendMessage(char *device, aJsonObject *object){
   
     aJson.addItemToObject(msg, ARGS, argsArray);
   
-    DBGC(F("Sending: "));
-    DBGCN(aJson.print(msg));
     send(EMIT, aJson.print(msg));
 }
 
@@ -505,7 +519,5 @@ void SkynetClient::sendMessage(char *device, char *object){
   
   aJson.addItemToObject(msg, ARGS, argsArray);
 
-  DBGC(F("Sending: "));
-  DBGCN(aJson.print(msg));
   send(EMIT, aJson.print(msg));
 }
