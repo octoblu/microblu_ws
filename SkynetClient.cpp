@@ -316,7 +316,7 @@ int SkynetClient::readHandshake() {
 
 	// check for happy "HTTP/1.1 200" response
 	readLine();
-	if (atoi(&databuffer[9]) != 200) {
+	if (atoi(&databuffer[8]) != 200) {
 		while (client.available()) readLine();
 		client.stop();
 		return 0;
@@ -347,7 +347,7 @@ int SkynetClient::readHandshake() {
 	if (!waitForInput()) return 0;
 
 	readLine();
-	if (atoi(&databuffer[9]) != 101) {
+	if (atoi(&databuffer[8]) != 101) {
 		while (client.available()) readLine();
 		client.stop();
 		return false;
@@ -365,8 +365,8 @@ int SkynetClient::readLine() {
 		char c = client.read();
 		if (c == 0){
 			DBGC(F("NULL"));
-		}else if (c == 255){
-			DBGCN(F("0x255"));	
+		}else if (c == -1){
+			DBGCN(F("-1"));	
 		}else if (c == '\r') {
 			;
 		}else if (c == '\n') 
