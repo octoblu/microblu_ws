@@ -105,6 +105,7 @@ void onMessage(aJsonObject *data){
   //print your message from skynet buffer
   while(skynetclient.available())
     Serial.print((char)skynetclient.read());
+  Serial.println();
   
   //or parse out entire data structure
   msg = aJson.getObjectItem(data, PAYLOAD);
