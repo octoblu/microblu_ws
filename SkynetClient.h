@@ -84,7 +84,7 @@ class SkynetClient  {
 		
 	private:
 	    ring_buffer *_rx_buffer;	
-		void dump(int x);
+		void dump();
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];
