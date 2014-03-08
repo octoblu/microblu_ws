@@ -12,33 +12,21 @@
  * This sketch is VERY low on ram. Currently it only works on an Arduino Mega
  * (4x the ram of an Uno)
  *
- * Works with ethernet shields compatible with EthernetClient library from
- * Arduino. If you don't know, grab the original 
- * http://arduino.cc/en/Main/ArduinoEthernetShield
+ * Works with the Spark core https://www.spark.io/
  * 
- * Requires the ajson library https://github.com/interactive-matter/aJson
- * 
- * You will notice we're using F() in Serial.print which might be new to you
- * Its covered briefly on the arduino print page but it means we can store
- * our strings in flash, instead of in ram. 
+ * Requires the JSMNSpark json parsing library https://github.com/pkourany/JSMNSpark
  * 
  * You can turn on debugging within SkynetClient.h by uncommenting 
  * #define SKYNETCLIENT_DEBUG
  */
 
-#include <utility/w5100.h>
-#include <EEPROM.h>
-#include <aJSON.h>
-#include "Ethernet.h"
-#include "SPI.h"
 #include "SkynetClient.h"
+#include "jsmnSpark.h"
 
-//avoid pins 10 11 12 13 plus if you're using sd card 4, and additionally pin 7 if wifi
+//Blue LED built in on spark on d7
 #define REDLED 6
-#define BLUELED 5
-#define GREENLED 4
-
-#define ON "on"
+#define BLUELED 7
+#define GREENLED 5
 
 SkynetClient skynetclient;
 
@@ -49,7 +37,7 @@ int port = 80;
 
 void setup()
 {
-  
+    
   pinMode(REDLED, OUTPUT);
   pinMode(GREENLED, OUTPUT);
   pinMode(BLUELED, OUTPUT);
@@ -58,26 +46,6 @@ void setup()
   delay(5000);
   Serial.begin(9600);
   
-  // start the Ethernet connection:
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println(F("Failed to configure Ethernet using DHCP"));
-    // no point in carrying on, so do nothing forevermore:
-    for(;;)
-      ;
-  }
-  
-  //decrease tcp timeout, fail quicker so we can get on with things
-  W5100.setRetransmissionTime(0x7D);
-  
-  // print your local IP address:
-  Serial.print(F("My IP address: "));
-  for (byte thisByte = 0; thisByte < 4; thisByte++) {
-    // print the value of each byte of the IP address:
-    Serial.print(Ethernet.localIP()[thisByte], DEC);
-    Serial.print("."); 
-  }
-  Serial.println();
-  
   skynetclient.setMessageDelegate(onMessage);
 
   bool status;
@@ -85,55 +53,70 @@ void setup()
     status=skynetclient.connect(hostname, port);
   }while(!status);
   
-  Serial.println(F("Connected!"));
+  Serial.println("Connected!");
   Serial.print("uuid: ");
   Serial.println(skynetclient.uuid);
   Serial.print("token: ");
   Serial.println(skynetclient.token);
 }
 
-aJsonObject *msg, *color;
-
-void onMessage(aJsonObject *data){
-  //print your message from skynet buffer
+void onMessage(char *data){
+  //print your payload from skynet buffer
   while(skynetclient.available())
-	Serial.print((char)skynetclient.read());
+    Serial.print((char)skynetclient.read());
+  Serial.println();
   
-  //or parse it
-  msg = aJson.getObjectItem(data, PAYLOAD);
-  Serial.println(aJson.print(msg));
+  //or parse for something inth the data structure
+  jsmn_parser p;
+  jsmntok_t token[64];
+  jsmn_init(&p);
   
-  color = aJson.getObjectItem(msg, "red");
-  if (color != NULL) {
-    if(strcmp(color->valuestring, ON) == 0){
-      Serial.println(F("red on"));
-      digitalWrite(REDLED, HIGH);
-    }else{
-      Serial.println(F("red off"));
-      digitalWrite(REDLED, LOW);
-    }
-  }
-  
-  color = aJson.getObjectItem(msg, "blue");
-  if (color != NULL) {
-    if(strcmp(color->valuestring, ON) == 0){
-      Serial.println(F("blue on"));
-      digitalWrite(BLUELED, HIGH);
-    }else{
-      Serial.println(F("blue off"));
-      digitalWrite(BLUELED, LOW);
-    }
-  }
-  
-  color = aJson.getObjectItem(msg, "green");
-  if (color != NULL) {
-    if(strcmp(color->valuestring, ON) == 0){
-      Serial.println(F("green off"));
-      digitalWrite(GREENLED, HIGH);
-    }else{
-      Serial.println(F("green off"));
-      digitalWrite(GREENLED, LOW);
-    }
+  int r = jsmn_parse(&p, data, token, 64);
+  if (r != 0)
+  {
+    Serial.print("Parse Failed :(");
+    Serial.println(r);
+  }else
+  {
+  	int sizeoftoken = token[10].end - token[10].start;
+   	char color[sizeoftoken + 1]; //space for null char
+    strncpy(color, data + token[10].start, token[10].end - token[10].start);
+  	color[sizeoftoken] = '\0'; //place the null char
+    Serial.print("color: ");
+    Serial.println(color);
+    
+  	sizeoftoken = token[11].end - token[11].start;
+    char value[sizeoftoken + 1]; //space for null char
+    strncpy(value, data + token[11].start, token[11].end - token[11].start);
+  	value[sizeoftoken] = '\0'; //place the null char
+    Serial.print("status: ");
+    Serial.println(value);
+	
+	if (strcmp("red", color) == 0 && strcmp("on", value) == 0)
+	{
+        Serial.println("turning red on");
+	    digitalWrite(REDLED, HIGH);
+	}else if (strcmp("red", color) == 0 && strcmp("off", value) == 0)
+	{
+        Serial.println("turning red off");
+	    digitalWrite(REDLED, LOW);
+	}else if (strcmp("blue", color) == 0 && strcmp("on", value) == 0)
+	{
+        Serial.println("turning blue on");
+	    digitalWrite(BLUELED, HIGH);
+	}else if (strcmp("blue", color) == 0 && strcmp("off", value) == 0)
+	{
+        Serial.println("turning blue off");
+	    digitalWrite(BLUELED, LOW);
+	}else if (strcmp("green", color) == 0 && strcmp("on", value) == 0)
+	{
+        Serial.println("turning green on");
+	    digitalWrite(GREENLED, HIGH);
+	}else if (strcmp("green", color) == 0 && strcmp("off", value) == 0)
+	{
+        Serial.println("turning green on");
+	    digitalWrite(GREENLED, LOW);
+	}
   }
 }
 

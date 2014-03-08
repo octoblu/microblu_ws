@@ -1,11 +1,6 @@
 #ifndef _SKYNETCLIENT_H
 #define _SKYNETCLIENT_H
 
-#include "Arduino.h"
-#include "SPI.h"
-#include "Client.h"
-#include <EEPROM.h>
-#include <avr/eeprom.h>
 #include "jsmnSpark.h"
 
 
@@ -31,10 +26,6 @@
 
 #define UUIDSIZE 37
 #define TOKENSIZE 33
-#define EEPROMBLOCKADDRESS 0
-#define EEPROMBLOCK 'S'
-#define TOKENADDRESS 1
-#define UUIDADDRESS TOKENADDRESS+TOKENSIZE
 
 // Length of static data buffers
 #define DATA_BUFFER_LEN 255
@@ -65,8 +56,7 @@ class SkynetClient  {
 		void setMessageDelegate(MessageDelegate messageDelegate);
 		void sendMessage(char device[], char object[]);
 
-	    int connect(IPAddress ip, uint16_t port);
-	    int connect(const char *host, uint16_t port);
+	    int connect(char *host, uint16_t port);
 	    size_t write(const uint8_t *buf, size_t size);
 	    int available();
 	    int read();
@@ -87,7 +77,7 @@ class SkynetClient  {
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];
-		IPAddress theip;
+		char *theip;
 		void printByByte(char*);		
 		void printToken(char *js, jsmntok_t t);
 
@@ -100,8 +90,6 @@ class SkynetClient  {
 		void process();
 
         MessageDelegate messageDelegate;
-		void eeprom_write_bytes(char *, int, int);
-		void eeprom_read_bytes(char*, int, int);
 };
 
 #endif // _SKYNETCLIENT_H

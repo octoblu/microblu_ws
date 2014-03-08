@@ -12,24 +12,14 @@
  * This sketch is VERY low on ram. Currently it only works on an Arduino Mega
  * (4x the ram of an Uno)
  *
- * Works with ethernet shields compatible with EthernetClient library from
- * Arduino. If you don't know, grab the original 
- * http://arduino.cc/en/Main/ArduinoEthernetShield
+ * Works with the Spark core https://www.spark.io/
  * 
  * Requires the JSMNSpark json parsing library https://github.com/pkourany/JSMNSpark
- * 
- * You will notice we're using F() in Serial.print which might be new to you
- * Its covered briefly on the arduino print page but it means we can store
- * our strings in flash, instead of in ram. 
  * 
  * You can turn on debugging within SkynetClient.h by uncommenting 
  * #define SKYNETCLIENT_DEBUG
  */
 
-#include <utility/w5100.h>
-#include <EEPROM.h>
-#include "Ethernet.h"
-#include "SPI.h"
 #include "SkynetClient.h"
 #include "jsmnSpark.h"
 
@@ -46,26 +36,6 @@ void setup()
   delay(5000);
   Serial.begin(9600);
   
-  // start the Ethernet connection:
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println(F("Failed to configure Ethernet using DHCP"));
-    // no point in carrying on, so do nothing forevermore:
-    for(;;)
-      ;
-  }
-  
-  //decrease tcp timeout, fail quicker so we can get on with things
-  W5100.setRetransmissionTime(0x7D);
-  
-  // print your local IP address:
-  Serial.print(F("My IP address: "));
-  for (byte thisByte = 0; thisByte < 4; thisByte++) {
-    // print the value of each byte of the IP address:
-    Serial.print(Ethernet.localIP()[thisByte], DEC);
-    Serial.print("."); 
-  }
-  Serial.println();
-  
   skynetclient.setMessageDelegate(onMessage);
 
   bool status;
@@ -73,14 +43,12 @@ void setup()
     status=skynetclient.connect(hostname, port);
   }while(!status);
   
-  Serial.println(F("Connected!"));
+  Serial.println("Connected!");
   Serial.print("uuid: ");
   Serial.println(skynetclient.uuid);
   Serial.print("token: ");
   Serial.println(skynetclient.token);
 }
-
-aJsonObject *msg, *fromUuid;
 
 void onMessage(char *data){
   //print your payload from skynet buffer
@@ -95,14 +63,14 @@ void onMessage(char *data){
   int r = jsmn_parse(&p, data, token, 64);
   if (r != 0)
   {
-    Serial.print(F("Parse Failed :("));
+    Serial.print("Parse Failed :(");
     Serial.println(r);
   }else
   {
     char fromUuid[token[15].size+1];
     strncpy(fromUuid, data + token[15].start, token[15].end - token[15].start);
 
-    Serial.print(F("return address:"));
+    Serial.print("return address:");
     Serial.println(fromUuid);
     skynetclient.sendMessage(fromUuid, "Thanks!");
   }
