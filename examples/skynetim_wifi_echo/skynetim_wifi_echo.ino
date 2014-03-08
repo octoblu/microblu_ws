@@ -103,6 +103,7 @@ void onMessage(char *data){
   //print your payload from skynet buffer
   while(skynetclient.available())
     Serial.print((char)skynetclient.read());
+  Serial.println();
   
   //or parse for something inth the data structure
   jsmn_parser p;
