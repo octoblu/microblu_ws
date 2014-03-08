@@ -5,8 +5,8 @@
 #include "SPI.h"
 #include "Client.h"
 #include <EEPROM.h>
-#include <aJSON.h>
 #include <avr/eeprom.h>
+#include "jsmnSpark.h"
 
 
 #define NAME "name"
@@ -37,7 +37,7 @@
 #define UUIDADDRESS TOKENADDRESS+TOKENSIZE
 
 // Length of static data buffers
-#define DATA_BUFFER_LEN 50
+#define DATA_BUFFER_LEN 255
 #define SID_LEN 24
 
 #define SKYNETCLIENT_DEBUG
@@ -52,7 +52,7 @@
 #if (RAMEND < 1000)
   #define SKYNET_BUFFER_SIZE 200
 #else
-  #define SKYNET_BUFFER_SIZE 200
+  #define SKYNET_BUFFER_SIZE 255
 #endif
 struct ring_buffer;
 
@@ -60,11 +60,10 @@ class SkynetClient  {
 	public:
 		SkynetClient();
 		
-		typedef void (*MessageDelegate)(aJsonObject *data);
+		typedef void (*MessageDelegate)(char *data);
 
 		void setMessageDelegate(MessageDelegate messageDelegate);
-		void sendMessage(char *device, char *object);
-		void sendMessage(char *device, aJsonObject *object);
+		void sendMessage(char device[], char object[]);
 
 	    int connect(IPAddress ip, uint16_t port);
 	    int connect(const char *host, uint16_t port);
@@ -84,12 +83,14 @@ class SkynetClient  {
 		
 	private:
 	    ring_buffer *_rx_buffer;	
-		void dump(int x);
+		void dump();
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];
 		IPAddress theip;
-		void send(char *encoding, char *data);
+		void printByByte(char*);		
+		void printToken(char *js, jsmntok_t t);
+
         void sendHandshake();
         int readHandshake();
 		int readLine();
@@ -98,7 +99,6 @@ class SkynetClient  {
 		uint8_t status;
 		void process();
 
-		aJsonObject *msg, *temp, *reply, *args, *argsArray, *parsedArgs, *parsedArgsZero;
         MessageDelegate messageDelegate;
 		void eeprom_write_bytes(char *, int, int);
 		void eeprom_read_bytes(char*, int, int);

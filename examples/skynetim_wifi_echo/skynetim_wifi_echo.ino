@@ -16,7 +16,7 @@
  * Arduino. If you don't know, grab the original 
  * http://arduino.cc/en/Main/ArduinoEthernetShield
  * 
- * Requires the ajson library https://github.com/interactive-matter/aJson
+ * Requires the JSMNSpark json parsing library https://github.com/pkourany/JSMNSpark
  * 
  * You will notice we're using F() in Serial.print which might be new to you
  * Its covered briefly on the arduino print page but it means we can store
@@ -34,10 +34,10 @@
 */
 
 #include <EEPROM.h>
-#include <aJSON.h>
 #include <WiFi.h>
 #include "SPI.h"
 #include "SkynetClient.h"
+#include "jsmnSpark.h"
 
 SkynetClient skynetclient;
 
@@ -99,25 +99,29 @@ void setup()
   Serial.println(skynetclient.token);
 }
 
-aJsonObject *msg, *fromUuid;
-
-void onMessage(aJsonObject *data){
-  //print your message from skynet buffer
+void onMessage(char *data){
+  //print your payload from skynet buffer
   while(skynetclient.available())
     Serial.print((char)skynetclient.read());
   
-  //or parse out entire data structure
-  msg = aJson.getObjectItem(data, PAYLOAD);
-  Serial.println(aJson.print(msg));
+  //or parse for something inth the data structure
+  jsmn_parser p;
+  jsmntok_t token[64];
+  jsmn_init(&p);
   
-  fromUuid = aJson.getObjectItem(data, FROMUUID);
-  
-  //Lets echo back if there was a fromuuid
-  if (strcmp(fromUuid->name, FROMUUID) == 0){
-    Serial.print(F("return address:"));
-    Serial.println(fromUuid->valuestring);
+  int r = jsmn_parse(&p, data, token, 64);
+  if (r != 0)
+  {
+    Serial.print(F("Parse Failed :("));
+    Serial.println(r);
+  }else
+  {
+    char fromUuid[token[15].size+1];
+    strncpy(fromUuid, data + token[15].start, token[15].end - token[15].start);
 
-    skynetclient.sendMessage(fromUuid->valuestring, "Thanks!");
+    Serial.print(F("return address:"));
+    Serial.println(fromUuid);
+    skynetclient.sendMessage(fromUuid, "Thanks!");
   }
 }
 
