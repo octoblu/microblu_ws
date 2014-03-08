@@ -80,8 +80,6 @@ void setup()
   Serial.println(skynetclient.token);
 }
 
-aJsonObject *msg, *fromUuid;
-
 void onMessage(char *data){
   //print your payload from skynet buffer
   while(skynetclient.available())
