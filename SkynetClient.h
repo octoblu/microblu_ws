@@ -8,6 +8,14 @@
 #include <avr/eeprom.h>
 #include "jsmnSpark.h"
 
+#define SKYNETCLIENT_DEBUG
+#ifdef SKYNETCLIENT_DEBUG
+#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
+#define DBGC( ... ) Serial.print( __VA_ARGS__ )
+#else
+#define DBGCN( ... )
+#define DBGC( ... )
+#endif
 
 #define NAME "name"
 #define IDENTITY "identity"
@@ -29,8 +37,10 @@
 #define FROMUUID "fromUuid"
 #define DATA "data"
 
+#define SID_LEN 24
 #define UUIDSIZE 37
 #define TOKENSIZE 33
+
 #define EEPROMBLOCKADDRESS 0
 #define EEPROMBLOCK 'S'
 #define TOKENADDRESS 1
@@ -38,23 +48,11 @@
 
 // Length of static data buffers
 #define DATA_BUFFER_LEN 255
-#define SID_LEN 24
+#define SKYNET_TX_BUFFER_SIZE 25
+#define SKYNET_BUFFER_SIZE 255
 
-#define SKYNETCLIENT_DEBUG
-#ifdef SKYNETCLIENT_DEBUG
-#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
-#define DBGC( ... ) Serial.print( __VA_ARGS__ )
-#else
-#define DBGCN( ... )
-#define DBGC( ... )
-#endif
-
-#if (RAMEND < 1000)
-  #define SKYNET_BUFFER_SIZE 200
-#else
-  #define SKYNET_BUFFER_SIZE 255
-#endif
-struct ring_buffer;
+struct rx_buffer;
+struct tx_buffer;
 
 class SkynetClient  {
 	public:
@@ -63,33 +61,41 @@ class SkynetClient  {
 		typedef void (*MessageDelegate)(char *data);
 
 		void setMessageDelegate(MessageDelegate messageDelegate);
-		void sendMessage(char device[], char object[]);
+		void sendMessage(const char *device, const char *object);
 
 	    int connect(IPAddress ip, uint16_t port);
 	    int connect(const char *host, uint16_t port);
+	    size_t write(uint8_t c);
 	    size_t write(const uint8_t *buf, size_t size);
+	    size_t writeRaw(const uint8_t *buf, size_t size);
+
 	    int available();
 	    int read();
 	    // int read(uint8_t *buf, size_t size);
 	    int peek();
 	    void flush();
+	    void flushTX();
 	    void stop();
 	    uint8_t connected();
 	    operator bool();
 		void monitor();
-		
+
 		char token[TOKENSIZE];
 		char uuid[UUIDSIZE];
+	    char lastReceivedUuid[UUIDSIZE];
 		
 	private:
-	    ring_buffer *_rx_buffer;	
+	    rx_buffer *_rx_buffer;
+	    tx_buffer *_tx_buffer;
 		void dump();
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
-		char sid[SID_LEN];
+
 		IPAddress theip;
-		void printByByte(char*);		
-		void printToken(char *js, jsmntok_t t);
+		void printByByte(const char *data);
+		void printByByte(const char *data, size_t size);
+
+		void printToken(const char *js, jsmntok_t t);
 
         void sendHandshake();
         int readHandshake();
