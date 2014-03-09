@@ -88,7 +88,7 @@ class SkynetClient  {
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];
-		IPAddress theip;
+		const char *thehost;
 		void send(char *encoding, char *data);
         void sendHandshake();
         int readHandshake();
