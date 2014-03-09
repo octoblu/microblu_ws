@@ -16,7 +16,8 @@
  * Arduino. If you don't know, grab the original 
  * http://arduino.cc/en/Main/ArduinoEthernetShield
  * 
- * Requires the JSMNSpark json parsing library https://github.com/pkourany/JSMNSpark
+ * Also requires the Arduino-zed JSMNSpark json parsing library 
+ * https://github.com/jacobrosenthal/JSMNSpark 
  * 
  * You will notice we're using F() in Serial.print which might be new to you
  * Its covered briefly on the arduino print page but it means we can store
