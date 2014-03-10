@@ -47,9 +47,9 @@
 #define UUIDADDRESS TOKENADDRESS+TOKENSIZE
 
 // Length of static data buffers
-#define DATA_BUFFER_LEN 255
+#define SOCKET_RX_BUFFER_SIZE 255
 #define SKYNET_TX_BUFFER_SIZE 25
-#define SKYNET_BUFFER_SIZE 255
+#define SKYNET_RX_BUFFER_SIZE 128
 
 struct rx_buffer;
 struct tx_buffer;
@@ -89,7 +89,7 @@ class SkynetClient  {
 	    tx_buffer *_tx_buffer;
 		void dump();
 		char *dataptr;
-		char databuffer[DATA_BUFFER_LEN];
+		char databuffer[SOCKET_RX_BUFFER_SIZE];
 
 		IPAddress theip;
 		void printByByte(const char *data);
