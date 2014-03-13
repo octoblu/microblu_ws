@@ -38,7 +38,10 @@
 #define BLUELED 5
 #define GREENLED 4
 
-SkynetClient skynetclient;
+WiFiClient client;
+
+SkynetClient skynetclient(client);
+
 
 char ssid[] = "yournetworkname";     //  your network SSID (name)
 char pass[] = "yourpassword";  // your WPA network password

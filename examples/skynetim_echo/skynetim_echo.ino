@@ -34,7 +34,9 @@
 #include "SkynetClient.h"
 #include "jsmnSpark.h"
 
-SkynetClient skynetclient;
+EthernetClient client;
+
+SkynetClient skynetclient(client);
 
 //you can't have 2 of the same mac on your network!
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };

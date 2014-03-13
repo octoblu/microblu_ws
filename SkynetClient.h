@@ -56,7 +56,7 @@ struct tx_buffer;
 
 class SkynetClient  {
 	public:
-		SkynetClient();
+		SkynetClient(Client &_client);
 		
 		typedef void (*MessageDelegate)(char *data);
 
@@ -85,13 +85,14 @@ class SkynetClient  {
 	    char lastReceivedUuid[UUIDSIZE];
 		
 	private:
+		Client* client;
 	    rx_buffer *_rx_buffer;
 	    tx_buffer *_tx_buffer;
 		void dump();
 		char *dataptr;
 		char databuffer[SOCKET_RX_BUFFER_SIZE];
 
-		IPAddress theip;
+		const char *thehost;
 		void printByByte(const char *data);
 		void printByByte(const char *data, size_t size);
 

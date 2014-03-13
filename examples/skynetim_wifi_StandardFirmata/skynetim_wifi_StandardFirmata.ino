@@ -38,7 +38,9 @@
 #include "SkynetClient.h"
 #include "jsmnSpark.h"
 
-SkynetClient skynetclient;
+WiFiClient client;
+
+SkynetClient skynetclient(client);
 
 char ssid[] = "yournetworkname";     //  your network SSID (name)
 char pass[] = "yourpassword";  // your WPA network password

@@ -27,20 +27,15 @@
  * #define SKYNETCLIENT_DEBUG
  */
 
- /*
- * YOU NEED TO ENABLE WIFI BY EDITING SkynetClient.cpp AND UNCOMMENTING
- * #include <WiFi.h> and WiFiClient client;
- * AND COMMENTING OUT
- * #include <Ethernet.h> and EthernetClient client;
-*/
-
 #include <EEPROM.h>
 #include <WiFi.h>
 #include "SPI.h"
 #include "SkynetClient.h"
 #include "jsmnSpark.h"
 
-SkynetClient skynetclient;
+WiFiClient client;
+
+SkynetClient skynetclient(client);
 
 char ssid[] = "yournetworkname";     //  your network SSID (name)
 char pass[] = "yourpassword";  // your WPA network password
