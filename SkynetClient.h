@@ -46,6 +46,8 @@
 #define TOKENADDRESS 1
 #define UUIDADDRESS TOKENADDRESS+TOKENSIZE
 
+#define MAX_PARSE_OBJECTS 20
+
 // Length of static data buffers
 #define SOCKET_RX_BUFFER_SIZE 255
 #define SKYNET_TX_BUFFER_SIZE 25
@@ -54,7 +56,7 @@
 struct rx_buffer;
 struct tx_buffer;
 
-class SkynetClient  {
+class SkynetClient : public Stream {
 	public:
 		SkynetClient(Client &_client);
 		
@@ -62,6 +64,7 @@ class SkynetClient  {
 
 		void setMessageDelegate(MessageDelegate messageDelegate);
 		void sendMessage(const char *device, const char *object);
+		void sendMessage(const char *object);
 
 	    int connect(IPAddress ip, uint16_t port);
 	    int connect(const char *host, uint16_t port);

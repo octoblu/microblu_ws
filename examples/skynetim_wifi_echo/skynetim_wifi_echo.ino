@@ -113,14 +113,14 @@ void onMessage(char *data){
     Serial.println(r);
   }else
   {
-	int sizeoftoken = token[15].end - token[15].start;
-    char fromUuid[sizeoftoken + 1];
-    strncpy(fromUuid, data + token[15].start, token[15].end - token[15].start);
-  	fromUuid[sizeoftoken] = '\0'; //place the null char
+	int sizeoftoken = token[13].end - token[13].start;
+	char fromUuid[sizeoftoken + 1];
+	strncpy(fromUuid, data + token[13].start, sizeoftoken);
+	fromUuid[sizeoftoken] = '\0'; //place the null char
 
-    Serial.print(F("return address:"));
-    Serial.println(fromUuid);
-    skynetclient.sendMessage(fromUuid, "Thanks!");
+	Serial.print(F("return address:"));
+	Serial.println(fromUuid);
+	skynetclient.sendMessage(fromUuid, "Thanks!");
   }
 }
 
