@@ -579,6 +579,11 @@ void systemResetCallback()
   // pins with analog capability default to analog input
   // otherwise, pins default to digital output
   for (byte i=0; i < TOTAL_PINS; i++) {
+	  
+	// skip SPI pins
+	if ( (i==7) || (i==MOSI) || (i==MISO) || (i==SCK) || (i==SS) )
+		continue;
+      
     if (IS_PIN_ANALOG(i)) {
       // turns off pullup, configures everything
       setPinModeCallback(i, ANALOG);
