@@ -86,19 +86,15 @@ void setup()
   }while(!status);
   
   Serial.println(F("Connected!"));
-  Serial.print("uuid: ");
+  Serial.print(F("uuid: "));
   Serial.println(skynetclient.uuid);
-  Serial.print("token: ");
+  Serial.print(F("token: "));
   Serial.println(skynetclient.token);
 }
 
 void onMessage(char *data){
-  //print your payload from skynet buffer
-  while(skynetclient.available())
-    Serial.print((char)skynetclient.read());
-  Serial.println();
   
-  //or parse for something inth the data structure
+  //parse for something inth the data structure
   jsmn_parser p;
   jsmntok_t token[64];
   jsmn_init(&p);
@@ -110,7 +106,6 @@ void onMessage(char *data){
     Serial.println(r);
   }else
   {
-	
 	int sizeoftoken = token[10].end - token[10].start;
   	char color[sizeoftoken + 1]; //space for null char
     strncpy(color, data + token[10].start, token[10].end - token[10].start);

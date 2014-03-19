@@ -77,38 +77,19 @@ void setup()
   }while(!status);
   
   Serial.println(F("Connected!"));
-  Serial.print("uuid: ");
+  Serial.print(F("uuid: "));
   Serial.println(skynetclient.uuid);
-  Serial.print("token: ");
+  Serial.print(F("token: "));
   Serial.println(skynetclient.token);
 }
 
 void onMessage(char *data){
-  //print your payload from skynet buffer
+  //access your payload from skynet buffer
   while(skynetclient.available())
     Serial.print((char)skynetclient.read());
-  
-  //or parse for something inth the data structure
-  jsmn_parser p;
-  jsmntok_t token[64];
-  jsmn_init(&p);
-  
-  int r = jsmn_parse(&p, data, token, 64);
-  if (r != 0)
-  {
-    Serial.print(F("Parse Failed :("));
-    Serial.println(r);
-  }else
-  {
-  	int sizeoftoken = token[15].end - token[15].start;
-    char fromUuid[sizeoftoken + 1];
-    strncpy(fromUuid, data + token[15].start, token[15].end - token[15].start);
-    fromUuid[sizeoftoken] = '\0'; //place the null char
-
-    Serial.print(F("return address:"));
-    Serial.println(fromUuid);
-    skynetclient.sendMessage(fromUuid, "Thanks!");
-  }
+   
+   //or send a reply
+   skynetclient.sendMessage("Thanks!");  
 }
 
 void loop(){
