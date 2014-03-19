@@ -49,9 +49,9 @@
 #define MAX_PARSE_OBJECTS 20
 
 // Length of static data buffers
-#define SOCKET_RX_BUFFER_SIZE 255
+#define SOCKET_RX_BUFFER_SIZE 200
 #define SKYNET_TX_BUFFER_SIZE 25
-#define SKYNET_RX_BUFFER_SIZE 128
+#define SKYNET_RX_BUFFER_SIZE 64
 
 struct rx_buffer;
 struct tx_buffer;
