@@ -110,8 +110,8 @@ class SkynetClient : public Stream {
 		void process();
 
         MessageDelegate messageDelegate;
-		void eeprom_write_bytes(char *, int, int);
-		void eeprom_read_bytes(char*, int, int);
+		void eeprom_write_bytes(int, char*, int);
+		void eeprom_read_bytes(int, char*, int);
 };
 
 #endif // _SKYNETCLIENT_H
