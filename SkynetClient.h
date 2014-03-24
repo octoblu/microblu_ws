@@ -51,7 +51,7 @@
 // Length of static data buffers
 #define SOCKET_RX_BUFFER_SIZE 200
 #define SKYNET_TX_BUFFER_SIZE 25
-#define SKYNET_RX_BUFFER_SIZE 64
+#define SKYNET_RX_BUFFER_SIZE 32
 
 struct rx_buffer;
 struct tx_buffer;
