@@ -33,21 +33,17 @@
 #include <Wire.h>
 #include <Firmata.h>
 #include <EEPROM.h>
-#include <WiFi.h>
+#include "Ethernet.h"
 #include "SPI.h"
 #include "SkynetClient.h"
 #include "jsmnSpark.h"
 
-WiFiClient client;
+EthernetClient client;
 
 SkynetClient skynetclient(client);
 
-char ssid[] = "yournetworkname";      //  your network SSID (name)
-char pass[] = "yourpassword";         // your WPA network password
-// char key[] = "D0D0DEADF00DABBADEAFBEADED";       // your WEP network key
-// int keyIndex = 0;                                // your WEP network key Index number
-
-int status = WL_IDLE_STATUS;     // the Wifi radio's status
+//you can't have 2 of the same mac on your network!
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 char hostname[] = "skynet.im";
 int port = 80;
@@ -613,16 +609,12 @@ void setup()
   delay(5000);
   Serial.begin(9600);
 
-  // attempt to connect to Wifi network:
-  while ( status != WL_CONNECTED) {
-    Serial.print(F("Attempting to connect to WPA SSID: "));
-    Serial.println(ssid);
-    // Connect to WPA/WPA2 network:
-    status = WiFi.begin(ssid, pass); //begin WPA
-    // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
-
-    // wait 10 seconds for connection:
-    delay(10000);
+  // start the Ethernet connection:
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println(F("Failed to configure Ethernet using DHCP"));
+    // no point in carrying on, so do nothing forevermore:
+    for(;;)
+      ;
   }
   
   bool status;
