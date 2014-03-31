@@ -8,6 +8,7 @@
 #include <avr/eeprom.h>
 #include "jsmnSpark.h"
 #include "utility/ringbuffer.h"
+#include "utility/b64.h"
 
 //#define SKYNETCLIENT_DEBUG
 #ifdef SKYNETCLIENT_DEBUG
@@ -106,11 +107,6 @@ class SkynetClient : public Stream {
 		int readLineSocket();
 		void processData(const char *data);
 		void processSkynet(const char *data, const char ack);
-		void b64decodestore(char *src, ringbuffer &buffer);
-		void b64send(ringbuffer &buffer, Client &out);
-		void b64send(const uint8_t *buf, size_t size, Client &out);
-		char b64lookup(const char c);
-		char b64reverselookup(const char c);
 
 		void eeprom_write_bytes(int, char*, int);
 		void eeprom_read_bytes(int, char*, int);
