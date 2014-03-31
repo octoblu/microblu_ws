@@ -4,13 +4,8 @@
 #define TOKEN_STRING(js, t, s) \
 	(strncmp(js+(t).start, s, (t).end - (t).start) == 0 \
 	 && strlen(s) == (t).end - (t).start)
-		 
-struct tx_buffer
-{
-  unsigned char buffer[SKYNET_TX_BUFFER_SIZE];
-  volatile unsigned int head;
-  volatile unsigned int tail;
-};
+	
+ringbuffer txbuf(SKYNET_TX_BUFFER_SIZE);
 
 struct rx_buffer
 {
@@ -20,7 +15,6 @@ struct rx_buffer
 };
 
 rx_buffer socket_rx_buffer =    { { 0 }, 0, 0};
-tx_buffer socket_tx_buffer =    { { 0 }, 0, 0};
 
 inline void store_char(unsigned char c, rx_buffer *buffer)
 {
@@ -42,7 +36,6 @@ SkynetClient::SkynetClient(Client &_client){
 
 int SkynetClient::connect(const char* host, uint16_t port) {
 	_rx_buffer = &socket_rx_buffer;
-	_tx_buffer = &socket_tx_buffer;
 
 	thehost = host;
 	status = 0;
@@ -477,10 +470,8 @@ size_t SkynetClient::write(uint8_t c)
 		DBGC(F("Storing: "));
 
 	    DBGCN((char)c);
-		int i = (_tx_buffer->head + 1) % SKYNET_TX_BUFFER_SIZE;
-		
-		_tx_buffer->buffer[_tx_buffer->head] = c;
-		_tx_buffer->head = i;
+
+	    txbuf.push(c);
 
 		return 1;
 	}
@@ -494,7 +485,7 @@ size_t SkynetClient::write(uint8_t c)
 
 void SkynetClient::flushTX()
 {
-	if(_tx_buffer->head != _tx_buffer->tail){
+	if(txbuf.available()){
 		DBGC(F("Sending: "));
 	
 	    DBGC((char)0);
@@ -503,7 +494,7 @@ void SkynetClient::flushTX()
 	    DBGC(MSG);	
 		client->print(MSG);
 
-		b64send(&socket_tx_buffer, *client);
+		b64send(txbuf, *client);
 		
 		DBGCN((char)255);
 		client->print((char)255);
@@ -517,10 +508,10 @@ void SkynetClient::flushTX()
     'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
   
 
-void SkynetClient::b64send(tx_buffer *buffer, Client &out)
+void SkynetClient::b64send(ringbuffer &buffer, Client &out)
 {
 	int i = 0;
-	while(buffer->head != buffer->tail)
+	while(buffer.available())
 	{
 		//default to 
 		char c[] = {0, 0, 0};
@@ -533,10 +524,9 @@ void SkynetClient::b64send(tx_buffer *buffer, Client &out)
 			// DBGC((int)i%3);
 			// DBGC(": ");
 			// DBGCN((int)(buffer->buffer[buffer->tail]));
-			c[i%3]=(buffer->buffer[buffer->tail]);
-      		buffer->tail = (unsigned int)(buffer->tail + 1) % SKYNET_TX_BUFFER_SIZE;
+			c[i%3]=buffer.pop();
       		i++;
-		}while((buffer->head != buffer->tail) && (i%3!=0));
+		}while(buffer.available() && (i%3!=0));
 
 		if (i%3==1)
 		{
