@@ -47,8 +47,6 @@ char pass[] = "yourpassword";         // your WPA network password
 // char key[] = "D0D0DEADF00DABBADEAFBEADED";       // your WEP network key
 // int keyIndex = 0;                                // your WEP network key Index number
 
-int status = WL_IDLE_STATUS;     // the Wifi radio's status
-
 char hostname[] = "skynet.im";
 int port = 80;
 
@@ -608,27 +606,21 @@ void systemResetCallback()
 
 void setup() 
 {
-  
-  //delay to give you time to open a console so we don't hammer server
-  delay(5000);
   Serial.begin(9600);
 
-  // attempt to connect to Wifi network:
-  while ( status != WL_CONNECTED) {
+  int wifiStatus = WL_IDLE_STATUS;
+  do {
     Serial.print(F("Attempting to connect to WPA SSID: "));
     Serial.println(ssid);
-    // Connect to WPA/WPA2 network:
-    status = WiFi.begin(ssid, pass); //begin WPA
-    // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
 
-    // wait 10 seconds for connection:
-    delay(10000);
-  }
+    wifiStatus = WiFi.begin(ssid, pass); //begin WPA
+    // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
+  } while ( wifiStatus != WL_CONNECTED);
   
-  bool status;
+  bool skynetStatus = false;
   do {
-    status=skynetclient.connect(hostname, port);
-  }while(!status);
+    skynetStatus = skynetclient.connect(hostname, port);
+  } while (!skynetStatus);
   
   Serial.println(F("Connected!"));
   Serial.print(F("uuid: "));
