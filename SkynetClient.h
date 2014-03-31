@@ -9,7 +9,7 @@
 #include "jsmnSpark.h"
 #include "utility/ringbuffer.h"
 
-#define SKYNETCLIENT_DEBUG
+//#define SKYNETCLIENT_DEBUG
 #ifdef SKYNETCLIENT_DEBUG
 #define DBGCN( ... ) Serial.println( __VA_ARGS__ )
 #define DBGC( ... ) Serial.print( __VA_ARGS__ )
@@ -53,10 +53,8 @@
 
 // Length of static data buffers
 #define SOCKET_RX_BUFFER_SIZE 200 //200 currently covers biggest skynet message like READY
-#define SKYNET_TX_BUFFER_SIZE 200 //160 is needed for firmata's capability query
+#define SKYNET_TX_BUFFER_SIZE 160 //160 is needed for firmata's capability query
 #define SKYNET_RX_BUFFER_SIZE 32
-
-struct rx_buffer;
 
 class SkynetClient : public Stream {
 	public:
@@ -89,7 +87,6 @@ class SkynetClient : public Stream {
 		
 	private:
 		Client* client;
-	    rx_buffer *_rx_buffer;
 		char databuffer[SOCKET_RX_BUFFER_SIZE];
 		uint8_t status;
 		uint8_t bind;
@@ -109,7 +106,7 @@ class SkynetClient : public Stream {
 		int readLineSocket();
 		void processData(const char *data);
 		void processSkynet(const char *data, const char ack);
-		void b64decodestore(char *src, rx_buffer *buffer);
+		void b64decodestore(char *src, ringbuffer &buffer);
 		void b64send(ringbuffer &buffer, Client &out);
 		void b64send(const uint8_t *buf, size_t size, Client &out);
 		char b64lookup(const char c);

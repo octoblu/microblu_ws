@@ -6,37 +6,14 @@
 	 && strlen(s) == (t).end - (t).start)
 	
 ringbuffer txbuf(SKYNET_TX_BUFFER_SIZE);
-
-struct rx_buffer
-{
-  unsigned char buffer[SKYNET_RX_BUFFER_SIZE];
-  volatile unsigned int head;
-  volatile unsigned int tail;
-};
-
-rx_buffer socket_rx_buffer =    { { 0 }, 0, 0};
-
-inline void store_char(unsigned char c, rx_buffer *buffer)
-{
-  int i = (unsigned int)(buffer->head + 1) % SKYNET_RX_BUFFER_SIZE;
-
-  // if we should be storing the received character into the location
-  // just before the tail (meaning that the head would advance to the
-  // current location of the tail), we're about to overflow the buffer
-  // and so we don't write the character or advance the head.
-  if (i != buffer->tail) {
-    buffer->buffer[buffer->head] = c;
-    buffer->head = i;
-  }
-}
+ringbuffer rxbuf(SKYNET_RX_BUFFER_SIZE);
 
 SkynetClient::SkynetClient(Client &_client){
 	this->client = &_client; 
 }
 
-int SkynetClient::connect(const char* host, uint16_t port) {
-	_rx_buffer = &socket_rx_buffer;
-
+int SkynetClient::connect(const char* host, uint16_t port) 
+{
 	thehost = host;
 	status = 0;
 	bind = 0;
@@ -113,7 +90,7 @@ void SkynetClient::monitor()
 				
 			case '3':
 				DBGCN(F("Data"));
-				b64decodestore(dataptr, &socket_rx_buffer);
+				b64decodestore(dataptr, rxbuf);
 				break;
 
 			case '5':	
@@ -623,7 +600,7 @@ char SkynetClient::b64lookup(const char c)
 	return pgm_read_byte( &b64[ c ]);
 }
 
-void SkynetClient::b64decodestore(char *src, rx_buffer *buffer)
+void SkynetClient::b64decodestore(char *src, ringbuffer &buffer)
 {
 	int i = 0;
 	while(src[i]!='\0')
@@ -647,7 +624,7 @@ void SkynetClient::b64decodestore(char *src, rx_buffer *buffer)
 		d0 = ((c[0] << 2) & 252) | (c[1] >>4 & 3);
 		// DBGC("d0: ");
 		DBGCN(d0, HEX);
-    	store_char( d0, &socket_rx_buffer);
+    	buffer.push(d0);
     	
     	//if c3 is equal sign (negative one in our lookup), we ignore the second to last character
 		if(c[3] != -1)
@@ -655,7 +632,7 @@ void SkynetClient::b64decodestore(char *src, rx_buffer *buffer)
 			d1 = ((c[1] << 4) & 240) | (c[2] >>2 & 15);
 			// DBGC("d1: ");
 			DBGCN(d1, HEX);
-    		store_char( d1, &socket_rx_buffer);
+    		buffer.push(d1);
 		}
 
 		//if c2 is equal sign (negative one in our lookup), we ignore the second to last character
@@ -664,7 +641,7 @@ void SkynetClient::b64decodestore(char *src, rx_buffer *buffer)
 			d2 = ((c[2] << 6) & 192) | (c[3] & 63);
 			// DBGC("d2: ");
 			DBGCN(d2, HEX);
-	    	store_char( d2, &socket_rx_buffer);
+	    	buffer.push(d2);
 	    }
 	}
 	DBGCN();
@@ -699,28 +676,30 @@ char SkynetClient::b64reverselookup(const char c)
 }
 
 int SkynetClient::available() {
-  return (unsigned int)(SKYNET_RX_BUFFER_SIZE + _rx_buffer->head - _rx_buffer->tail) % SKYNET_RX_BUFFER_SIZE;
+  return rxbuf.available();
 }
 
 int SkynetClient::read() {
     // if the head isn't ahead of the tail, we don't have any characters
-    if (_rx_buffer->head == _rx_buffer->tail) {
-      return -1;
+    if (rxbuf.available()) 
+    {
+    	return rxbuf.pop();
     } else {
-      unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
-      _rx_buffer->tail = (unsigned int)(_rx_buffer->tail + 1) % SKYNET_RX_BUFFER_SIZE;
-      return c;
+    	return -1;
     }
 }
 
 // //TODO	
 // int SkynetClient::read(uint8_t *buf, size_t size) {
 // }
-int SkynetClient::peek() {
-    if (_rx_buffer->head == _rx_buffer->tail) {
-      return -1;
+
+int SkynetClient::peek() 
+{
+    if (rxbuf.available()) 
+    {
+    	return rxbuf.peek();
     } else {
-      return _rx_buffer->buffer[_rx_buffer->tail];
+    	return -1;
     }
 }
 
