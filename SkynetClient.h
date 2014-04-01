@@ -66,7 +66,6 @@ class SkynetClient : public Stream {
 		void setMessageDelegate(MessageDelegate messageDelegate);
 		void sendMessage(const char* device, char const *object);
 
-	    int connect(IPAddress ip, uint16_t port);
 	    int connect(const char *host, uint16_t port);
 	    size_t write(uint8_t c);
 	    size_t write(const uint8_t *buf, size_t size);
@@ -77,7 +76,6 @@ class SkynetClient : public Stream {
 	    // int read(uint8_t *buf, size_t size);
 	    int peek();
 	    void flush();
-	    void flushTX();
 	    void stop();
 	    uint8_t connected();
 	    operator bool();

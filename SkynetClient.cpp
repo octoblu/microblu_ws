@@ -36,10 +36,6 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	return status;
 }
 
-int SkynetClient::connect(IPAddress ip, uint16_t port) {
-	return -1;
-}
-
 uint8_t SkynetClient::connected() {
   return bind;
 }
@@ -52,7 +48,7 @@ void SkynetClient::stop() {
 
 void SkynetClient::monitor()
 {
-	flushTX();
+	flush();
 
     if (client->available()) 
     {
@@ -468,7 +464,7 @@ size_t SkynetClient::write(uint8_t c)
 	}
 }
 
-void SkynetClient::flushTX()
+void SkynetClient::flush()
 {
 	if(txbuf.available()){
 		DBGC(F("Sending: "));
@@ -512,11 +508,6 @@ int SkynetClient::peek()
     } else {
     	return -1;
     }
-}
-
-void SkynetClient::flush() 
-{
-	client->flush();
 }
 
 // the next function allows us to use the client returned by

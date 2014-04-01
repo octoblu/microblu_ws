@@ -24,7 +24,6 @@ flush	KEYWORD2
 peek 	KEYWORD2
 stop	KEYWORD2
 connected	KEYWORD2
-flushTX KEYWORD2
 connected KEYWORD2
 monitor KEYWORD2
 
