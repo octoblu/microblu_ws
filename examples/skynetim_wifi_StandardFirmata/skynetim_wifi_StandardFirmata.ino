@@ -36,7 +36,7 @@
 #include <WiFi.h>
 #include "SPI.h"
 #include "SkynetClient.h"
-#include "jsmnSpark.h"
+#include <JsonParser.h>
 
 WiFiClient client;
 

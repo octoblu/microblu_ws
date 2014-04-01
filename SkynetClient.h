@@ -6,11 +6,11 @@
 #include "Client.h"
 #include <EEPROM.h>
 #include <avr/eeprom.h>
-#include "jsmnSpark.h"
 #include "utility/ringbuffer.h"
 #include "utility/b64.h"
+#include <JsonParser.h>
 
-//#define SKYNETCLIENT_DEBUG
+#define SKYNETCLIENT_DEBUG
 #ifdef SKYNETCLIENT_DEBUG
 #define DBGCN( ... ) Serial.println( __VA_ARGS__ )
 #define DBGC( ... ) Serial.print( __VA_ARGS__ )
@@ -50,11 +50,11 @@
 #define TOKENADDRESS EEPROMBLOCKADDRESS+1
 #define UUIDADDRESS TOKENADDRESS+TOKENSIZE
 
-#define MAX_PARSE_OBJECTS 20
+#define MAX_PARSE_OBJECTS 20 // Something like Ready from Skynet has 16 tokens
 
 // Length of static data buffers
-#define SOCKET_RX_BUFFER_SIZE 200 //200 currently covers biggest skynet message like READY
-#define SKYNET_TX_BUFFER_SIZE 160 //160 is needed for firmata's capability query
+#define SOCKET_RX_BUFFER_SIZE 200 //200 currently covers biggest skynet message like READY which has 184
+#define SKYNET_TX_BUFFER_SIZE 160 //~160 is needed for firmata's capability query
 #define SKYNET_RX_BUFFER_SIZE 32
 
 class SkynetClient : public Stream {
@@ -106,7 +106,7 @@ class SkynetClient : public Stream {
 
 		int readLineSocket();
 		void processData(const char *data);
-		void processSkynet(const char *data, const char ack);
+		void processSkynet(char *data, const char ack);
 
 		void eeprom_write_bytes(int, char*, int);
 		void eeprom_read_bytes(int, char*, int);

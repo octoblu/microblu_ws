@@ -36,8 +36,8 @@
 #include "Ethernet.h"
 #include "SPI.h"
 #include "SkynetClient.h"
-#include "jsmnSpark.h"
-
+#include <JsonParser.h>
+ 
 EthernetClient client;
 
 SkynetClient skynetclient(client);

@@ -115,7 +115,7 @@ void SkynetClient::monitor()
 	}
 }
 
-void SkynetClient::processSkynet(const char *data, const char ack)
+void SkynetClient::processSkynet(char *data, const char ack)
 {
 	jsmn_parser p;
 	jsmntok_t tok[MAX_PARSE_OBJECTS];
@@ -257,8 +257,14 @@ void SkynetClient::processSkynet(const char *data, const char ack)
     {
 		DBGCN(MESSAGE);
 
+		//just give them the args
+		int index = tok[5].end;
+		data[index]=0;
+
+		DBGCN(data + tok[5].start);
+
 		if (messageDelegate != NULL) {
-			messageDelegate(data);
+			messageDelegate(data + tok[5].start);
 		}
     }
     else

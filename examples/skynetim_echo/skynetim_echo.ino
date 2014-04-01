@@ -16,8 +16,8 @@
  * Arduino. If you don't know, grab the original 
  * http://arduino.cc/en/Main/ArduinoEthernetShield
  * 
- * Also requires the Arduino-zed JSMNSpark json parsing library 
- * https://github.com/jacobrosenthal/JSMNSpark 
+ * Also requires the ArduinoJsonParser 
+ * https://github.com/bblanchon/ArduinoJsonParser 
  * 
  * You will notice we're using F() in Serial.print which might be new to you
  * Its covered briefly on the arduino print page but it means we can store
@@ -27,12 +27,11 @@
  * #define SKYNETCLIENT_DEBUG
  */
 
-#include <utility/w5100.h>
 #include <EEPROM.h>
 #include "Ethernet.h"
 #include "SPI.h"
 #include "SkynetClient.h"
-#include "jsmnSpark.h"
+#include <JsonParser.h>
 
 EthernetClient client;
 
@@ -57,25 +56,13 @@ void setup()
       ;
   }
   
-  //decrease tcp timeout, fail quicker so we can get on with things
-  W5100.setRetransmissionTime(0x7D);
-  
-  // print your local IP address:
-  Serial.print(F("My IP address: "));
-  for (byte thisByte = 0; thisByte < 4; thisByte++) {
-    // print the value of each byte of the IP address:
-    Serial.print(Ethernet.localIP()[thisByte], DEC);
-    Serial.print("."); 
-  }
-  Serial.println();
-  
   skynetclient.setMessageDelegate(onMessage);
 
-  bool status;
+  bool skynetStatus = false;
   do {
-    status=skynetclient.connect(hostname, port);
-  }while(!status);
-  
+    skynetStatus = skynetclient.connect(hostname, port);
+  } while (!skynetStatus);
+
   Serial.println(F("Connected!"));
   Serial.print(F("uuid: "));
   Serial.println(skynetclient.uuid);
@@ -83,16 +70,33 @@ void setup()
   Serial.println(skynetclient.token);
 }
 
-void onMessage(char *data){
-  //access your payload from skynet buffer
-  while(skynetclient.available())
-    Serial.print((char)skynetclient.read());
-   
-   //or send a reply
-   skynetclient.sendMessage("Thanks!");  
+void onMessage(const char * const data) {
+  
+  JsonParser<16> parser;
+
+  Serial.print("Parse ");
+  Serial.println(data);
+
+  JsonHashTable hashTable = parser.parseHashTable((char*)data);
+
+  if (!hashTable.success())
+  {
+      Serial.println("JsonParser.parseHashTable() failed");
+      return;
+  }
+    
+  char* payload = hashTable.getString("payload");
+  Serial.print("payload=");
+  Serial.println(payload);
+    
+  char* fromUuid = hashTable.getString("fromUuid");
+  Serial.print("fromUuid=");
+  Serial.println(fromUuid);
+
+  skynetclient.sendMessage(fromUuid, payload);
 }
 
-void loop(){
-  //need to call monitor to check for new data on ethernet
-  skynetclient.monitor(); 
+void loop() {
+  //need to call monitor to check for new data
+  skynetclient.monitor();
 }
