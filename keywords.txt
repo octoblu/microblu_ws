@@ -12,22 +12,21 @@ SkynetClient	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 
-status	KEYWORD2
-connect	KEYWORD2
-write	KEYWORD2
+setMessageDelegate KEYWORD2
+sendMessage KEYWORD2
+connect		KEYWORD2
+write		KEYWORD2
+writeRaw	KEYWORD2
 available	KEYWORD2
 read	KEYWORD2
 peek	KEYWORD2
 flush	KEYWORD2
+peek 	KEYWORD2
 stop	KEYWORD2
 connected	KEYWORD2
-begin	KEYWORD2
-beginPacket	KEYWORD2
-endPacket	KEYWORD2
-parsePacket	KEYWORD2
-remoteIP	KEYWORD2
-remotePort	KEYWORD2
-
+flushTX KEYWORD2
+connected KEYWORD2
+monitor KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

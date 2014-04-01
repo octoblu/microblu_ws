@@ -604,9 +604,6 @@ void systemResetCallback()
 
 void setup() 
 {
-  
-  //delay to give you time to open a console so we don't hammer server
-  delay(5000);
   Serial.begin(9600);
 
   // start the Ethernet connection:
@@ -617,10 +614,10 @@ void setup()
       ;
   }
   
-  bool status;
+  bool skynetStatus = false;
   do {
-    status=skynetclient.connect(hostname, port);
-  }while(!status);
+    skynetStatus = skynetclient.connect(hostname, port);
+  } while (!skynetStatus);
   
   Serial.println(F("Connected!"));
   Serial.print(F("uuid: "));

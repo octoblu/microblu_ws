@@ -44,8 +44,6 @@ int port = 80;
 
 void setup()
 {
-  //delay to give you time to open a console so we don't hammer server
-  delay(5000);
   Serial.begin(9600);
   
   // start the Ethernet connection:
