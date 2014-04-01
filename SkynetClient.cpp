@@ -117,6 +117,8 @@ void SkynetClient::monitor()
 
 void SkynetClient::processSkynet(char *data, const char ack)
 {
+	char token[TOKENSIZE];
+
 	jsmn_parser p;
 	jsmntok_t tok[MAX_PARSE_OBJECTS];
 

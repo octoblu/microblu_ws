@@ -66,8 +66,6 @@ void setup()
   Serial.println(F("Connected!"));
   Serial.print(F("uuid: "));
   Serial.println(skynetclient.uuid);
-  Serial.print(F("token: "));
-  Serial.println(skynetclient.token);
 }
 
 void onMessage(const char * const data) {

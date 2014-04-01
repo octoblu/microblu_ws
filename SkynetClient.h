@@ -50,11 +50,11 @@
 #define TOKENADDRESS EEPROMBLOCKADDRESS+1
 #define UUIDADDRESS TOKENADDRESS+TOKENSIZE
 
-#define MAX_PARSE_OBJECTS 20 // Something like Ready from Skynet has 16 tokens
+#define MAX_PARSE_OBJECTS 16 //16 needed for Ready from Skynet
 
 // Length of static data buffers
-#define SOCKET_RX_BUFFER_SIZE 200 //200 currently covers biggest skynet message like READY which has 184
-#define SKYNET_TX_BUFFER_SIZE 160 //~160 is needed for firmata's capability query
+#define SOCKET_RX_BUFFER_SIZE 186 //186 needed for biggest skynet message, READY
+#define SKYNET_TX_BUFFER_SIZE 150 //~150 is needed for firmata's capability query on an uno
 #define SKYNET_RX_BUFFER_SIZE 32
 
 class SkynetClient : public Stream {
@@ -83,7 +83,6 @@ class SkynetClient : public Stream {
 	    operator bool();
 		void monitor();
 
-		char token[TOKENSIZE];
 		char uuid[UUIDSIZE];
 		
 	private:
