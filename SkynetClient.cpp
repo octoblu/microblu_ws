@@ -114,6 +114,7 @@ void SkynetClient::monitor()
 void SkynetClient::processSkynet(char *data, const char ack)
 {
 	char token[TOKENSIZE];
+	char uuid[UUIDSIZE];
 
 	jsmn_parser p;
 	jsmntok_t tok[MAX_PARSE_OBJECTS];
@@ -143,11 +144,9 @@ void SkynetClient::processSkynet(char *data, const char ack)
 		
 		if( eeprom_read_byte( (uint8_t*)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
 		{
-			eeprom_read_bytes(TOKENADDRESS, token, TOKENSIZE);
-			token[TOKENSIZE-1]='\0'; //in case courrupted or not defined
-	
-			eeprom_read_bytes(UUIDADDRESS, uuid, UUIDSIZE);
-			uuid[UUIDSIZE-1]='\0'; //in case courrupted or not defined
+			getToken(token);
+
+			getUuid(uuid);
 
 			printByByte("\", \"uuid\":\"");
 			printByByte(uuid);
@@ -165,8 +164,7 @@ void SkynetClient::processSkynet(char *data, const char ack)
 		DBGCN(READY);
 		status = 1;
 		
-        eeprom_read_bytes(TOKENADDRESS, token, TOKENSIZE);
-        token[TOKENSIZE-1]='\0'; //in case courrupted or not defined
+        getToken(token);
 		
         //if token has been refreshed, save it
         if (!TOKEN_STRING(data, tok[15], token ))
@@ -187,8 +185,7 @@ void SkynetClient::processSkynet(char *data, const char ack)
 			DBGCN(F("no token refresh necessary"));
         }
 		
-		eeprom_read_bytes(UUIDADDRESS, uuid, UUIDSIZE);
-        uuid[UUIDSIZE-1]='\0'; //in case courrupted or not defined
+		getUuid(uuid);
 
         //if uuid has been refreshed, save it
         if (!TOKEN_STRING(data, tok[13], uuid ))
@@ -531,6 +528,16 @@ void SkynetClient::eeprom_read_bytes(int address, char *buf, int bufSize){
   for(int i = 0; i<bufSize; i++){
     buf[i] = EEPROM.read(address+i);
   }
+}
+
+void SkynetClient::getToken(char *token){
+	eeprom_read_bytes(TOKENADDRESS, token, TOKENSIZE);
+	token[TOKENSIZE-1]='\0'; //in case courrupted or not defined
+}
+
+void SkynetClient::getUuid(char *uuid){
+	eeprom_read_bytes(UUIDADDRESS, uuid, UUIDSIZE);
+	uuid[UUIDSIZE-1]='\0'; //in case courrupted or not defined
 }
 
 void SkynetClient::sendMessage(const char *device, char const *object)

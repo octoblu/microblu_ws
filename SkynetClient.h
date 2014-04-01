@@ -80,8 +80,8 @@ class SkynetClient : public Stream {
 	    uint8_t connected();
 	    operator bool();
 		void monitor();
-
-		char uuid[UUIDSIZE];
+		void getUuid(char *uuid);
+		void getToken(char *token);
 		
 	private:
 		Client* client;
