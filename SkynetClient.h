@@ -5,9 +5,19 @@
 #include "SPI.h"
 #include "Client.h"
 #include <EEPROM.h>
-#include <aJSON.h>
 #include <avr/eeprom.h>
+#include "utility/ringbuffer.h"
+#include "utility/b64.h"
+#include <JsonParser.h>
 
+#define SKYNETCLIENT_DEBUG
+#ifdef SKYNETCLIENT_DEBUG
+#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
+#define DBGC( ... ) Serial.print( __VA_ARGS__ )
+#else
+#define DBGCN( ... )
+#define DBGC( ... )
+#endif
 
 #define NAME "name"
 #define IDENTITY "identity"
@@ -22,86 +32,83 @@
 #define UUID "uuid"
 #define TOKEN "token"
 #define MESSAGE "message"
+#define BIND "bindSocket"
 #define PAYLOAD "payload"
 #define DEVICES "devices"
 #define EMIT "5:::"
+#define MSG "3:::"
 #define HEARTBEAT "2::"
 #define FROMUUID "fromUuid"
 #define DATA "data"
 
+#define SID_LEN 24
 #define UUIDSIZE 37
 #define TOKENSIZE 33
+
 #define EEPROMBLOCKADDRESS 0
 #define EEPROMBLOCK 'S'
-#define TOKENADDRESS 1
+#define TOKENADDRESS EEPROMBLOCKADDRESS+1
 #define UUIDADDRESS TOKENADDRESS+TOKENSIZE
 
+#define MAX_PARSE_OBJECTS 16 //16 needed for Ready from Skynet
+
 // Length of static data buffers
-#define DATA_BUFFER_LEN 50
-#define SID_LEN 24
+#define SOCKET_RX_BUFFER_SIZE 186 //186 needed for biggest skynet message, READY
+#define SKYNET_TX_BUFFER_SIZE 150 //~150 is needed for firmata's capability query on an uno
+#define SKYNET_RX_BUFFER_SIZE 32
 
-#define SKYNETCLIENT_DEBUG
-#ifdef SKYNETCLIENT_DEBUG
-#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
-#define DBGC( ... ) Serial.print( __VA_ARGS__ )
-#else
-#define DBGCN( ... )
-#define DBGC( ... )
-#endif
-
-#if (RAMEND < 1000)
-  #define SKYNET_BUFFER_SIZE 200
-#else
-  #define SKYNET_BUFFER_SIZE 200
-#endif
-struct ring_buffer;
-
-class SkynetClient  {
+class SkynetClient : public Stream {
 	public:
-		SkynetClient();
+		SkynetClient(Client &_client);
 		
-		typedef void (*MessageDelegate)(aJsonObject *data);
+		typedef void (*MessageDelegate)(const char *data);
 
 		void setMessageDelegate(MessageDelegate messageDelegate);
-		void sendMessage(char *device, char *object);
-		void sendMessage(char *device, aJsonObject *object);
+		void sendMessage(const char* device, char const *object);
 
 	    int connect(IPAddress ip, uint16_t port);
 	    int connect(const char *host, uint16_t port);
+	    size_t write(uint8_t c);
 	    size_t write(const uint8_t *buf, size_t size);
+	    size_t writeRaw(const uint8_t *buf, size_t size);
+
 	    int available();
 	    int read();
 	    // int read(uint8_t *buf, size_t size);
 	    int peek();
 	    void flush();
+	    void flushTX();
 	    void stop();
 	    uint8_t connected();
 	    operator bool();
 		void monitor();
-		
-		char token[TOKENSIZE];
+
 		char uuid[UUIDSIZE];
 		
 	private:
-	    ring_buffer *_rx_buffer;	
-		void dump();
-		char *dataptr;
-		char databuffer[DATA_BUFFER_LEN];
-		char sid[SID_LEN];
+		Client* client;
+		char databuffer[SOCKET_RX_BUFFER_SIZE];
+		uint8_t status;
+		uint8_t bind;
 		const char *thehost;
-		void send(char *encoding, char *data);
+        MessageDelegate messageDelegate;
+
+		void printByByte(const char *data);
+		void printByByte(const char *data, size_t size);
+		void printToken(const char *js, jsmntok_t t);
+
         void sendHandshake();
         int readHandshake();
-		int readLine();
-		bool waitForInput(void);
+		int readLineHTTP();
 		void eatHeader(void);
-		uint8_t status;
-		void process();
+		bool waitForInput(void);
 
-		aJsonObject *msg, *temp, *reply, *args, *argsArray, *parsedArgs, *parsedArgsZero;
-        MessageDelegate messageDelegate;
-		void eeprom_write_bytes(char *, int, int);
-		void eeprom_read_bytes(char*, int, int);
+		int readLineSocket();
+		void processData(const char *data);
+		void processSkynet(char *data, const char ack);
+
+		void eeprom_write_bytes(int, char*, int);
+		void eeprom_read_bytes(int, char*, int);
 };
 
 #endif // _SKYNETCLIENT_H
