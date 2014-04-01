@@ -9,6 +9,6 @@
  
 * Clone or download and unzip.
 * Rename the resulting folder to remove any - characters, and place folder in the libraries directory of your Arduino sketch directory. EX Documents/Arduino/libraries/skynet_firmware_arduino_master
-* Also requires the Arduino-zed JSMNSpark json parsing library https://github.com/jacobrosenthal/JSMNSpark 
+* Also requires the ArduinoJsonParser library https://github.com/bblanchon/ArduinoJsonParser  
 * After adding both, Close/reopen arduino and if all is well you'll find File->Examples->SkynetClient
 
