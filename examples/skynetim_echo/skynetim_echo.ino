@@ -62,13 +62,15 @@ void setup()
   } while (!skynetStatus);
 
   Serial.println(F("Connected!"));
-  char token[TOKENSIZE];
+  
   char uuid[UUIDSIZE];
-  skynetclient.getToken(token);
+
   skynetclient.getUuid(uuid);
-  Serial.print(F("token: "));
-  Serial.println(token);
   Serial.print(F("uuid: "));
+  Serial.println(uuid);
+  
+  skynetclient.getToken(uuid);
+  Serial.print(F("token: "));
   Serial.println(uuid);
 }
 
