@@ -18,7 +18,8 @@ void setup()
 {
   ...
   skynetclient.setMessageDelegate(onMessage);
-}```
+}
+```
 
 Then you can do whatever you want with that message including json parse it or string match it:
 Parse the payload:
@@ -45,7 +46,8 @@ void onMessage(const char * const data) {
   char* payload = hashTable.getString("payload");
   Serial.print("payload=");
   Serial.println(payload);
-}```
+}
+```
 
 Secondly, we've created the ability to bind 2 devices, like a virtual serial cable. This can be seen in our Firmata example:
 ```cpp
@@ -53,4 +55,5 @@ void loop() {
   skynetclient.monitor();
   while(skynetclient.available())
   	Serial.print(skynetclient.read());
-}```
+}
+```
