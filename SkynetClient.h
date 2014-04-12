@@ -82,7 +82,7 @@ class SkynetClient : public Stream {
 	    void stop();
 	    uint8_t connected();
 	    operator bool();
-		void monitor();
+		int monitor();
 		void getUuid(char *uuid);
 		void getToken(char *token);
 		

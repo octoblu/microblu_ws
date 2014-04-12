@@ -30,8 +30,7 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	}
 	
 	//monitor to initiate communications with skynet TODO some fail condition
-	while(!status)
-		monitor();
+	while(!monitor());
 	
 	return status;
 }
@@ -46,7 +45,7 @@ void SkynetClient::stop() {
 	client->stop();
 }
 
-void SkynetClient::monitor()
+int SkynetClient::monitor()
 {
 	flush();
 
@@ -116,6 +115,7 @@ void SkynetClient::monitor()
 				break;
 		}
 	}
+	return status;
 }
 
 //Got credentials back, store if necessary
@@ -156,6 +156,8 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 //lookup uuid and token if we have them and send in for validation
 void SkynetClient::processReady(char *data, jsmntok_t *tok)
 {
+	DBGCN(F("Skynet Connect"));
+
 	char token[TOKENSIZE];
 	char uuid[UUIDSIZE];
 
@@ -368,7 +370,6 @@ int SkynetClient::readHandshake() {
 		return false;
 	}
 	eatHeader();
-	monitor();		// treat the response as input
 	return 1;
 }
 
