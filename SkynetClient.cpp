@@ -31,7 +31,10 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	
 	//monitor to initiate communications with skynet TODO some fail condition
 	while(!monitor());
-	
+
+	//havent gotten a heartbeat yet so lets set current time
+	lastBeat = millis();
+
 	return status;
 }
 
@@ -47,6 +50,18 @@ void SkynetClient::stop() {
 
 int SkynetClient::monitor()
 {
+	//if we've expired, reconnect to skynet at least
+	if(status == 1 && (unsigned long)(millis() - lastBeat) >= HEARTBEATTIMEOUT){
+		DBGC(F("Timeout: "));
+		DBGCN(millis());
+
+		DBGC(F("lastbeat: "));
+		DBGCN(lastBeat);
+
+		stop();
+		return status;
+	}
+
 	flush();
 
     if (client->available()) 
@@ -102,7 +117,9 @@ int SkynetClient::monitor()
 				
 			//hearbeat
 			case '2':
-				DBGCN(F("Heartbeat"));
+				DBGC(F("Heartbeat at: "));
+				lastBeat = millis();
+				DBGCN(lastBeat);
 				client->print((char)0);
 				client->print(F("2::"));
 				client->print((char)255);

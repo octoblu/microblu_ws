@@ -50,6 +50,8 @@ char pass[] = "yourpassword";         // your WPA network password
 char hostname[] = "skynet.im";
 int port = 80;
 
+int wifiStatus = WL_IDLE_STATUS;
+
 // move the following defines to Firmata.h?
 #define I2C_WRITE B00000000
 #define I2C_READ B00001000
@@ -608,32 +610,6 @@ void setup()
 {
   Serial.begin(9600);
 
-  int wifiStatus = WL_IDLE_STATUS;
-  do {
-    Serial.print(F("Attempting to connect to WPA SSID: "));
-    Serial.println(ssid);
-
-    wifiStatus = WiFi.begin(ssid, pass); //begin WPA
-    // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
-  } while ( wifiStatus != WL_CONNECTED);
-  
-  bool skynetStatus = false;
-  do {
-    skynetStatus = skynetclient.connect(hostname, port);
-  } while (!skynetStatus);
-  
-  Serial.println(F("Connected!"));
-  
-  char uuid[UUIDSIZE];
-
-  skynetclient.getUuid(uuid);
-  Serial.print(F("uuid: "));
-  Serial.println(uuid);
-  
-  skynetclient.getToken(uuid);
-  Serial.print(F("token: "));
-  Serial.println(uuid);
-
   Firmata.setFirmwareVersion(FIRMATA_MAJOR_VERSION, FIRMATA_MINOR_VERSION);
 
   Firmata.attach(ANALOG_MESSAGE, analogWriteCallback);
@@ -653,7 +629,34 @@ void setup()
  *============================================================================*/
 void loop() 
 {
-  skynetclient.monitor(); 
+  while (wifiStatus != WL_CONNECTED) 
+  {
+    Serial.print(F("Attempting to connect to WPA SSID: "));
+    Serial.println(ssid);
+
+    wifiStatus = WiFi.begin(ssid, pass); //begin WPA
+    // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
+  }
+
+  while(!skynetclient.monitor())
+  {
+    bool skynetStatus = false;
+    do {
+      skynetStatus = skynetclient.connect(hostname, port);
+    } while (!skynetStatus);
+    
+    Serial.println(F("Connected!"));
+    
+    char uuid[UUIDSIZE];
+  
+    skynetclient.getUuid(uuid);
+    Serial.print(F("uuid: "));
+    Serial.println(uuid);
+    
+    skynetclient.getToken(uuid);
+    Serial.print(F("token: "));
+    Serial.println(uuid);   
+  }
   
   byte pin, analogPin;
 

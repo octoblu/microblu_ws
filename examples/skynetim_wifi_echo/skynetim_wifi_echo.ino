@@ -45,37 +45,11 @@ char pass[] = "yourpassword";  // your WPA network password
 char hostname[] = "skynet.im";
 int port = 80;
 
+int wifiStatus = WL_IDLE_STATUS;
+
 void setup()
 {
   Serial.begin(9600);
-
-  int wifiStatus = WL_IDLE_STATUS;
-  do {
-    Serial.print(F("Attempting to connect to WPA SSID: "));
-    Serial.println(ssid);
-
-    wifiStatus = WiFi.begin(ssid, pass); //begin WPA
-    // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
-  } while ( wifiStatus != WL_CONNECTED);
-
-  skynetclient.setMessageDelegate(onMessage);
-
-  bool skynetStatus = false;
-  do {
-    skynetStatus = skynetclient.connect(hostname, port);
-  } while (!skynetStatus);
-
-  Serial.println(F("Connected!"));
-  
-  char uuid[UUIDSIZE];
-
-  skynetclient.getUuid(uuid);
-  Serial.print(F("uuid: "));
-  Serial.println(uuid);
-  
-  skynetclient.getToken(uuid);
-  Serial.print(F("token: "));
-  Serial.println(uuid);
 }
 
 void onMessage(const char * const data) {
@@ -105,6 +79,32 @@ void onMessage(const char * const data) {
 }
 
 void loop() {
-  //need to call monitor to check for new data
-  skynetclient.monitor();
+  while (wifiStatus != WL_CONNECTED) 
+  {
+    Serial.print(F("Attempting to connect to WPA SSID: "));
+    Serial.println(ssid);
+
+    wifiStatus = WiFi.begin(ssid, pass); //begin WPA
+    // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
+  }
+
+  while(!skynetclient.monitor())
+  {
+    bool skynetStatus = false;
+    do {
+      skynetStatus = skynetclient.connect(hostname, port);
+    } while (!skynetStatus);
+    
+    Serial.println(F("Connected!"));
+    
+    char uuid[UUIDSIZE];
+  
+    skynetclient.getUuid(uuid);
+    Serial.print(F("uuid: "));
+    Serial.println(uuid);
+    
+    skynetclient.getToken(uuid);
+    Serial.print(F("token: "));
+    Serial.println(uuid);   
+  }
 }

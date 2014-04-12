@@ -613,23 +613,6 @@ void setup()
     for(;;)
       ;
   }
-  
-  bool skynetStatus = false;
-  do {
-    skynetStatus = skynetclient.connect(hostname, port);
-  } while (!skynetStatus);
-  
-  Serial.println(F("Connected!"));
-  
-  char uuid[UUIDSIZE];
-
-  skynetclient.getUuid(uuid);
-  Serial.print(F("uuid: "));
-  Serial.println(uuid);
-  
-  skynetclient.getToken(uuid);
-  Serial.print(F("token: "));
-  Serial.println(uuid);
 
   Firmata.setFirmwareVersion(FIRMATA_MAJOR_VERSION, FIRMATA_MINOR_VERSION);
 
@@ -650,7 +633,25 @@ void setup()
  *============================================================================*/
 void loop() 
 {
-  skynetclient.monitor(); 
+  while(!skynetclient.monitor()){
+    
+    bool skynetStatus = false;
+    do {
+      skynetStatus = skynetclient.connect(hostname, port);
+    } while (!skynetStatus);
+    
+    Serial.println(F("Connected!"));
+    
+    char uuid[UUIDSIZE];
+  
+    skynetclient.getUuid(uuid);
+    Serial.print(F("uuid: "));
+    Serial.println(uuid);
+    
+    skynetclient.getToken(uuid);
+    Serial.print(F("token: "));
+    Serial.println(uuid);   
+  }
   
   byte pin, analogPin;
 

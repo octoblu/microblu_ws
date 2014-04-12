@@ -55,23 +55,6 @@ void setup()
   }
   
   skynetclient.setMessageDelegate(onMessage);
-
-  bool skynetStatus = false;
-  do {
-    skynetStatus = skynetclient.connect(hostname, port);
-  } while (!skynetStatus);
-
-  Serial.println(F("Connected!"));
-  
-  char uuid[UUIDSIZE];
-
-  skynetclient.getUuid(uuid);
-  Serial.print(F("uuid: "));
-  Serial.println(uuid);
-  
-  skynetclient.getToken(uuid);
-  Serial.print(F("token: "));
-  Serial.println(uuid);
 }
 
 void onMessage(const char * const data) {
@@ -101,6 +84,23 @@ void onMessage(const char * const data) {
 }
 
 void loop() {
-  //need to call monitor to check for new data
-  skynetclient.monitor();
+  while(!skynetclient.monitor()){
+    
+    bool skynetStatus = false;
+    do {
+      skynetStatus = skynetclient.connect(hostname, port);
+    } while (!skynetStatus);
+    
+    Serial.println(F("Connected!"));
+    
+    char uuid[UUIDSIZE];
+  
+    skynetclient.getUuid(uuid);
+    Serial.print(F("uuid: "));
+    Serial.println(uuid);
+    
+    skynetclient.getToken(uuid);
+    Serial.print(F("token: "));
+    Serial.println(uuid);   
+  }
 }

@@ -91,6 +91,7 @@ class SkynetClient : public Stream {
 		char databuffer[SOCKET_RX_BUFFER_SIZE];
 		uint8_t status;
 		uint8_t bind;
+		unsigned long lastBeat;
 		const char *thehost;
         MessageDelegate messageDelegate;
 
