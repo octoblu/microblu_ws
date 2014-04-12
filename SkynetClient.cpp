@@ -54,15 +54,22 @@ void SkynetClient::monitor()
     {
 		int size = readLineSocket();
 
-		char ack = ' ';
 		char *first  = strchr(databuffer, ':'); 
 		char *second  = strchr(first+1, ':');
 		char *third  = strchr(second+1, ':');
 
-		//if first and second colon aren't next to eachother, grab the ack character
-		if ((second - first) != 1)
+		//-2 for the colons
+		int ackSize = second - first - 2;
+		char ack[MAXACK+1];
+
+		//if first and second colon aren't next to eachother, and acksize is sane, grab the ack character(s)
+		if (ackSize>0 && ackSize<MAXACK)
 		{
-			ack = first[1];
+			DBGCN(ackSize);
+			DBGCN(first+1);
+
+			strncpy(ack, first+1, ackSize);
+			ack[ackSize] = '\0';
 			DBGC(F("ack: "));
 			DBGCN(ack);
 		}
@@ -111,7 +118,7 @@ void SkynetClient::monitor()
 	}
 }
 
-void SkynetClient::processSkynet(char *data, const char ack)
+void SkynetClient::processSkynet(char *data, char *ack)
 {
 	char token[TOKENSIZE];
 	char uuid[UUIDSIZE];

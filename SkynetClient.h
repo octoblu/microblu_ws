@@ -44,6 +44,7 @@
 #define SID_LEN 24
 #define UUIDSIZE 37
 #define TOKENSIZE 33
+#define MAXACK 5
 
 #define EEPROMBLOCKADDRESS 0
 #define EEPROMBLOCK 'S'
@@ -103,7 +104,7 @@ class SkynetClient : public Stream {
 
 		int readLineSocket();
 		void processData(const char *data);
-		void processSkynet(char *data, const char ack);
+		void processSkynet(char *data, char *ack);
 
 		void eeprom_write_bytes(int, char*, int);
 		void eeprom_read_bytes(int, char*, int);
