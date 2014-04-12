@@ -46,6 +46,8 @@
 #define TOKENSIZE 33
 #define MAXACK 5
 
+#define HEARTBEATTIMEOUT 60000
+
 #define EEPROMBLOCKADDRESS 0
 #define EEPROMBLOCK 'S'
 #define TOKENADDRESS EEPROMBLOCKADDRESS+1
@@ -103,11 +105,16 @@ class SkynetClient : public Stream {
 		bool waitForInput(void);
 
 		int readLineSocket();
-		void processData(const char *data);
-		void processSkynet(char *data, char *ack);
 
 		void eeprom_write_bytes(int, char*, int);
 		void eeprom_read_bytes(int, char*, int);
+
+		void processSkynet(char *data, char *ack);
+		void processIdentify(char *data, jsmntok_t *tok);
+		void processReady(char *data, jsmntok_t *tok);
+		void processNotReady(char *data, jsmntok_t *tok);
+		void processMessage(char *data, jsmntok_t *tok);
+		void processBind(char *data, jsmntok_t *tok, char *ack);
 };
 
 #endif // _SKYNETCLIENT_H

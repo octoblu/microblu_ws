@@ -118,11 +118,149 @@ void SkynetClient::monitor()
 	}
 }
 
-void SkynetClient::processSkynet(char *data, char *ack)
+//Got credentials back, store if necessary
+void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 {
 	char token[TOKENSIZE];
 	char uuid[UUIDSIZE];
 
+    DBGC(F("Sending: "));
+
+    DBGC((char)0);
+	client->print((char)0);
+
+    DBGC(EMIT);	
+	client->print(EMIT);
+
+	printByByte("{\"name\":\"identity\",\"args\":[{\"socketid\":\"");
+	printToken(data, tok[7]);
+	
+	if( eeprom_read_byte( (uint8_t*)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
+	{
+		getToken(token);
+
+		getUuid(uuid);
+
+		printByByte("\", \"uuid\":\"");
+		printByByte(uuid);
+
+		printByByte("\", \"token\":\"");
+		printByByte(token);
+	}
+	printByByte("\"}]}");
+  
+	DBGCN((char)255);
+	client->print((char)255);
+}
+
+//lookup uuid and token if we have them and send in for validation
+void SkynetClient::processReady(char *data, jsmntok_t *tok)
+{
+	char token[TOKENSIZE];
+	char uuid[UUIDSIZE];
+
+	status = 1;
+	
+    getToken(token);
+	
+    //if token has been refreshed, save it
+    if (!TOKEN_STRING(data, tok[15], token ))
+    {
+		DBGCN(F("token refresh"));
+	  	strncpy(token, data + tok[15].start, tok[15].end - tok[15].start);
+
+        DBGC(F("new: "));
+      	DBGCN(token);
+      
+	  	eeprom_write_bytes(TOKENADDRESS, token, TOKENSIZE);
+
+		//write block identifier, arduino should protect us from writing if it doesnt need it?
+      	eeprom_write_byte((uint8_t *)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
+
+    }else
+    {
+		DBGCN(F("no token refresh necessary"));
+    }
+	
+	getUuid(uuid);
+
+    //if uuid has been refreshed, save it
+    if (!TOKEN_STRING(data, tok[13], uuid ))
+    {
+      	DBGCN(F("uuid refresh"));
+		strncpy(uuid, data + tok[13].start, tok[13].end - tok[13].start);
+		
+      	DBGC(F("new: "));
+      	DBGCN(uuid);
+		
+      	eeprom_write_bytes(UUIDADDRESS, uuid, UUIDSIZE);
+		
+		//write block identifier, arduino should protect us from writing if it doesnt need it?
+      	eeprom_write_byte((uint8_t *)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
+
+     }else
+     {
+       	DBGCN(F("no uuid refresh necessary"));
+     }
+}
+
+//Credentials have been invalidted, send blank identify for new ones
+void SkynetClient::processNotReady(char *data, jsmntok_t *tok)
+{
+    DBGC(F("Sending: "));
+
+    DBGC((char)0);
+	client->print((char)0);
+
+    DBGC(EMIT);	
+	client->print(EMIT);
+
+	printByByte("{\"name\":\"identity\",\"args\":[{\"socketid\":\"");
+	printToken(data, tok[11]);
+	printByByte("\"}]}");
+  
+	DBGCN((char)255);
+	client->print((char)255);
+}
+
+void SkynetClient::processBind(char *data, jsmntok_t *tok, char *ack)
+{
+	bind = 1;
+
+	DBGCN(BIND);
+
+    DBGC(F("Sending: "));
+
+    DBGC((char)0);
+	client->print((char)0);
+
+    DBGC("6:::");
+	client->print("6:::");
+
+	DBGC(ack);
+	client->print(ack);
+
+	printByByte("+[{\"result\":\"ok\"}]");
+  
+	DBGCN((char)255);
+	client->print((char)255);
+}
+
+void SkynetClient::processMessage(char *data, jsmntok_t *tok)
+{
+	//just give them the args
+	int index = tok[5].end;
+	data[index]=0;
+
+	DBGCN(data + tok[5].start);
+
+	if (messageDelegate != NULL) {
+		messageDelegate(data + tok[5].start);
+	}
+}
+
+void SkynetClient::processSkynet(char *data, char *ack)
+{
 	jsmn_parser p;
 	jsmntok_t tok[MAX_PARSE_OBJECTS];
 
@@ -137,137 +275,28 @@ void SkynetClient::processSkynet(char *data, char *ack)
 
     if (TOKEN_STRING(data, tok[2], IDENTIFY )) 
     {
-		DBGCN(F(IDENTIFY));
-	    DBGC(F("Sending: "));
-
-	    DBGC((char)0);
-		client->print((char)0);
-
-	    DBGC(EMIT);	
-		client->print(EMIT);
-	
-		printByByte("{\"name\":\"identity\",\"args\":[{\"socketid\":\"");
-		printToken(data, tok[7]);
-		
-		if( eeprom_read_byte( (uint8_t*)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
-		{
-			getToken(token);
-
-			getUuid(uuid);
-
-			printByByte("\", \"uuid\":\"");
-			printByByte(uuid);
-
-			printByByte("\", \"token\":\"");
-			printByByte(token);
-		}
-		printByByte("\"}]}");
-	  
-		DBGCN((char)255);
-		client->print((char)255);
+		DBGCN(IDENTIFY);
+		processIdentify(data, tok);
     } 
     else if (TOKEN_STRING(data, tok[2], READY )) 
     {
 		DBGCN(READY);
-		status = 1;
-		
-        getToken(token);
-		
-        //if token has been refreshed, save it
-        if (!TOKEN_STRING(data, tok[15], token ))
-        {
-			DBGCN(F("token refresh"));
-		  	strncpy(token, data + tok[15].start, tok[15].end - tok[15].start);
-
-            DBGC(F("new: "));
-          	DBGCN(token);
-          
-		  	eeprom_write_bytes(TOKENADDRESS, token, TOKENSIZE);
-
-			//write block identifier, arduino should protect us from writing if it doesnt need it?
-          	eeprom_write_byte((uint8_t *)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
-
-        }else
-        {
-			DBGCN(F("no token refresh necessary"));
-        }
-		
-		getUuid(uuid);
-
-        //if uuid has been refreshed, save it
-        if (!TOKEN_STRING(data, tok[13], uuid ))
-        {
-          	DBGCN(F("uuid refresh"));
-			strncpy(uuid, data + tok[13].start, tok[13].end - tok[13].start);
-			
-          	DBGC(F("new: "));
-          	DBGCN(uuid);
-			
-          	eeprom_write_bytes(UUIDADDRESS, uuid, UUIDSIZE);
-			
-			//write block identifier, arduino should protect us from writing if it doesnt need it?
-          	eeprom_write_byte((uint8_t *)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
-
-         }else
-         {
-           	DBGCN(F("no uuid refresh necessary"));
-         }
+		processReady(data, tok);
     }
     else if (TOKEN_STRING(data, tok[2], NOTREADY )) 
     {
-		//send blank identify
 		DBGCN(NOTREADY);
-
-	    DBGC(F("Sending: "));
-
-	    DBGC((char)0);
-		client->print((char)0);
-
-	    DBGC(EMIT);	
-		client->print(EMIT);
-
-		printByByte("{\"name\":\"identity\",\"args\":[{\"socketid\":\"");
-		printToken(data, tok[11]);
-		printByByte("\"}]}");
-	  
-		DBGCN((char)255);
-		client->print((char)255);
+		processNotReady(data, tok);
     }
     else if (TOKEN_STRING(data, tok[2], BIND )) 
     {
-    	bind = 1;
-
-    	DBGCN(BIND);
-
-	    DBGC(F("Sending: "));
-
-	    DBGC((char)0);
-		client->print((char)0);
-
-	    DBGC("6:::");
-		client->print("6:::");
-
-		DBGC(ack);
-		client->print(ack);
-
-		printByByte("+[{\"result\":\"ok\"}]");
-	  
-		DBGCN((char)255);
-		client->print((char)255);
+		DBGCN(BIND);
+		processBind(data, tok, ack);
     }
     else if (TOKEN_STRING(data, tok[2], MESSAGE )) 
     {
 		DBGCN(MESSAGE);
-
-		//just give them the args
-		int index = tok[5].end;
-		data[index]=0;
-
-		DBGCN(data + tok[5].start);
-
-		if (messageDelegate != NULL) {
-			messageDelegate(data + tok[5].start);
-		}
+		processMessage(data, tok);
     }
     else
     {
