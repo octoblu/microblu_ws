@@ -12,6 +12,10 @@ Skynet Firmware allows you to connect to Skynet.im via your Arduino and an Ardui
  * http://arduino.cc/en/Main/ArduinoBoardEthernet
  * http://arduino.cc/en/Main/ArduinoWiFiShield
 
+##Videos
+* https://www.youtube.com/watch?v=oQzWKPER_ic
+* https://www.youtube.com/watch?v=ZJNlqZXbrbM
+
 ##Install
 * Clone or download and unzip.
 * Rename the resulting folder to remove any - characters, and place folder in the libraries directory of your Arduino sketch directory. EX Documents/Arduino/libraries/skynet_firmware_arduino_master
