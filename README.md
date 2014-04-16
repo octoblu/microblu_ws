@@ -1,11 +1,11 @@
-
-                            SSSSS  kk                            tt
-                           SS      kk  kk yy   yy nn nnn    eee  tt
-                            SSSSS  kkkkk  yy   yy nnn  nn ee   e tttt  
-                                SS kk kk   yyyyyy nn   nn eeeee  tt
-                            SSSSS  kk  kk      yy nn   nn  eeeee  tttt
-                                           yyyyy
-
+```
+ SSSSS  kk                            tt
+SS      kk  kk yy   yy nn nnn    eee  tt
+ SSSSS  kkkkk  yy   yy nnn  nn ee   e tttt
+     SS kk kk   yyyyyy nn   nn eeeee  tt
+ SSSSS  kk  kk      yy nn   nn  eeeee  tttt
+                yyyyy
+```
 
 Skynet Firmware allows you to connect to Skynet.im via your Arduino and an Arduino ethernet or wifi shield (or any other device that properly implements the Client interface)
  * http://arduino.cc/en/Main/ArduinoEthernetShield
