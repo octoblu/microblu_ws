@@ -5,7 +5,6 @@
 #include "SPI.h"
 #include "Client.h"
 #include <EEPROM.h>
-#include <avr/eeprom.h>
 #include "utility/ringbuffer.h"
 #include "utility/b64.h"
 #include <JsonParser.h>

@@ -152,7 +152,7 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 	printByByte("{\"name\":\"identity\",\"args\":[{\"socketid\":\"");
 	printToken(data, tok[7]);
 	
-	if( eeprom_read_byte( (uint8_t*)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
+	if( EEPROM.read( (uint8_t)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
 	{
 		getToken(token);
 
@@ -194,7 +194,7 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
 	  	eeprom_write_bytes(TOKENADDRESS, token, TOKENSIZE);
 
 		//write block identifier, arduino should protect us from writing if it doesnt need it?
-      	eeprom_write_byte((uint8_t *)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
+      	EEPROM.write((uint8_t)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
 
     }else
     {
@@ -215,7 +215,7 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
       	eeprom_write_bytes(UUIDADDRESS, uuid, UUIDSIZE);
 		
 		//write block identifier, arduino should protect us from writing if it doesnt need it?
-      	eeprom_write_byte((uint8_t *)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
+      	EEPROM.write((uint8_t )EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
 
      }else
      {
