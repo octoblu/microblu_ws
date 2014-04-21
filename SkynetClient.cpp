@@ -65,11 +65,12 @@ int SkynetClient::connect(const char* host, uint16_t port)
 		return false;
 	}
 
+	//dump the remaining response
 	while(client->available())
 		client->read();
 
 	//turn the colon into a null char for printing
-	databuffer[pch - databuffer] = 0;
+	*pch = 0;
 	
 	DBGC(F("SID: "));
 	DBGCN(databuffer);
