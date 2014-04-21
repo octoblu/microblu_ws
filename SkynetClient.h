@@ -40,12 +40,13 @@
 #define FROMUUID "fromUuid"
 #define DATA "data"
 
-#define SID_LEN 24
+#define SID_MAXLEN 24
 #define UUIDSIZE 37
 #define TOKENSIZE 33
 #define MAXACK 5
 
 #define HEARTBEATTIMEOUT 60000
+#define SOCKETTIMEOUT 30000UL
 
 #define EEPROMBLOCKADDRESS 0
 #define EEPROMBLOCK 'S'
@@ -91,20 +92,14 @@ class SkynetClient : public Stream {
 		uint8_t status;
 		uint8_t bind;
 		unsigned long lastBeat;
-		const char *thehost;
         MessageDelegate messageDelegate;
 
 		void printByByte(const char *data);
 		void printByByte(const char *data, size_t size);
 		void printToken(const char *js, jsmntok_t t);
 
-        void sendHandshake();
-        int readHandshake();
-		int readLineHTTP();
-		void eatHeader(void);
-		bool waitForInput(void);
-
-		int readLineSocket();
+		uint8_t waitSocketData();
+		uint8_t readLine(char *buf, uint8_t max);
 
 		void eeprom_write_bytes(int, char*, int);
 		void eeprom_read_bytes(int, char*, int);

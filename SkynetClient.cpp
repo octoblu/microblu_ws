@@ -14,21 +14,98 @@ SkynetClient::SkynetClient(Client &_client){
 
 int SkynetClient::connect(const char* host, uint16_t port) 
 {
-	thehost = host;
 	status = 0;
 	bind = 0;
 
-	//connect tcp or fail
-	if (!client->connect(host, port)) 
-		return false;
+	DBGCN(F("Connecting TCP"));
 
-	//establish socket or fail
-	sendHandshake();
-	if(!readHandshake()){
-		stop();
+	//connect tcp or fail
+	if (!client->connect(host, port))
+	{
+		client->stop();
+		DBGCN(F("TCP Failed"));
+		return false;
+	}
+
+	client->println(F("POST /socket.io/1/ HTTP/1.1"));
+	client->print(F("Host: "));
+	client->println(host);
+	client->println("\r\n");
+
+	//receive data or return
+	if(!waitSocketData())
+	{
+		client->stop();
+		DBGCN(F("Post Failed"));
+		return false;
+	}
+
+	//check for OK or return
+	if(readLine(databuffer, SOCKET_RX_BUFFER_SIZE) == 0 || strstr (databuffer,"200") == NULL){
+		client->stop();
+		DBGCN(F("No Initial OK response"));
+		return false;
+	}
+
+	//dump the response until the socketid line
+	for(int i = 0; i<7; i++){
+		if(readLine(databuffer, SOCKET_RX_BUFFER_SIZE)==0)
+		{
+			client->stop();
+			DBGCN(F("Malformed POST response"));
+			return false;
+		}
+	}
+		
+	//find the end of sid or return
+	char *pch = strchr(databuffer,':');
+	if(pch==NULL){
+		DBGCN(F("No SID response"));
+		client->stop();
+		return false;
+	}
+
+	while(client->available())
+		client->read();
+
+	//turn the colon into a null char for printing
+	databuffer[pch - databuffer] = 0;
+	
+	DBGC(F("SID: "));
+	DBGCN(databuffer);
+	
+	client->print(F("GET /socket.io/1/websocket/"));
+	client->print(databuffer);
+	client->println(F(" HTTP/1.1"));
+	client->print(F("Host: "));
+	client->println(host);
+	client->println(F("Upgrade: WebSocket"));
+	client->println(F("Connection: Upgrade"));
+	client->println(F("\r\n"));
+
+	//receive data or return
+	if(!waitSocketData())
+	{
+		client->stop();
+		DBGCN(F("GET Failed"));
 		return false;
 	}
 	
+	//check for OK or return
+	if(readLine(databuffer, SOCKET_RX_BUFFER_SIZE) == 0 || strstr (databuffer,"101") == NULL)
+	{
+		DBGCN(F("No Final OK response"));
+		client->stop();
+		return false;
+	}
+
+	DBGCN(F("Websocket Connected"));
+
+	//dump the rest of the response
+	for(int i = 0; i<5; i++){
+		readLine(databuffer, SOCKET_RX_BUFFER_SIZE);
+	}
+
 	//monitor to initiate communications with skynet TODO some fail condition
 	while(!monitor());
 
@@ -37,6 +114,44 @@ int SkynetClient::connect(const char* host, uint16_t port)
 
 	return status;
 }
+
+uint8_t SkynetClient::waitSocketData()
+{
+	lastBeat = millis();
+	while (!client->available() && ((unsigned long)(millis() - lastBeat) <= SOCKETTIMEOUT))
+	{
+		;
+	}
+	return client->available();
+}
+
+uint8_t SkynetClient::readLine(char *buf, uint8_t max)
+{
+	int count = 0;
+
+	while(count < max)
+	{
+		char c = client->read();
+		switch (c)
+		{
+			case 0:
+			case 13:
+				break;
+			case 10:
+			case -1:
+				DBGCN(buf);
+				buf[count++]=0;
+				return count;
+			default:
+				buf[count++]=c;
+		}
+	}
+	buf[count++]=0;
+	DBGCN(buf);
+	return count;
+}
+
+
 
 uint8_t SkynetClient::connected() {
   return bind;
@@ -66,7 +181,7 @@ int SkynetClient::monitor()
 
     if (client->available()) 
     {
-		int size = readLineSocket();
+		int size = readLine(databuffer, SOCKET_RX_BUFFER_SIZE);
 
 		char *first  = strchr(databuffer, ':'); 
 		char *second  = strchr(first+1, ':');
@@ -321,124 +436,6 @@ void SkynetClient::processSkynet(char *data, char *ack)
     {
 		DBGC(F("Unknown:"));
     }
-}
-
-void SkynetClient::sendHandshake() {
-	client->println(F("GET /socket.io/1/ HTTP/1.1"));
-	client->print(F("Host: "));
-	client->println(thehost);
-	client->println(F("Origin: Arduino\r\n"));
-}
-
-bool SkynetClient::waitForInput(void) {
-	unsigned long now = millis();
-	while (!client->available() && ((millis() - now) < 30000UL)) {;}
-	return client->available();
-}
-
-void SkynetClient::eatHeader(void) {
-	while (client->available()) {	// consume the header
-		readLineHTTP();
-		if (strlen(databuffer) == 0) break;
-	}
-}
-
-int SkynetClient::readHandshake() {
-
-	if (!waitForInput()) return false;
-
-	// check for happy "HTTP/1.1 200" response
-	readLineHTTP();
-	if (atoi(&databuffer[8]) != 200) {
-		while (client->available()) readLineHTTP();
-		client->stop();
-		return 0;
-	}
-	eatHeader();
-	readLineHTTP();	// read first line of response
-	readLineHTTP();	// read sid : transport : timeout
-		
-	char sid[SID_LEN];
-	char *iptr = databuffer;
-	char *optr = sid;
-	while (*iptr && (*iptr != ':') && (optr < &sid[SID_LEN-2])) *optr++ = *iptr++;
-	*optr = 0;
-
-	DBGC(F("Connected. SID="));
-	DBGCN(sid);	// sid:transport:timeout 
-
-	while (client->available()) readLineHTTP();
-
-	client->print(F("GET /socket.io/1/websocket/"));
-	client->print(sid);
-	client->println(F(" HTTP/1.1"));
-	client->print(F("Host: "));
-	client->println(thehost);
-	client->println(F("Origin: ArduinoSkynetClient"));
-	client->println(F("Upgrade: WebSocket"));	// must be camelcase ?!
-	client->println(F("Connection: Upgrade\r\n"));
-
-	if (!waitForInput()) return 0;
-
-	readLineHTTP();
-	if (atoi(&databuffer[8]) != 101) {
-		while (client->available()) readLineHTTP();
-		client->stop();
-		return false;
-	}
-	eatHeader();
-	return 1;
-}
-
-int SkynetClient::readLineHTTP() {
-	int numBytes = 0;
-	char *dataptr = databuffer;
-	DBGC(F("ReadlineHTTP: "));
-	while (client->available() && (dataptr < &databuffer[SOCKET_RX_BUFFER_SIZE-3])) {
-		char c = client->read();
-		if (c == 0){
-			;
-		}else if (c == -1){
-			;
-		}else if (c == '\r') {
-			;
-		}else if (c == '\n') 
-			break;
-		else {
-			DBGC(c);
-			*dataptr++ = c;
-			numBytes++;
-		}
-	}
-	DBGCN();
-	*dataptr = 0;
-	return numBytes;
-}
-
-int SkynetClient::readLineSocket() {
-	int numBytes = 0;
-	char *dataptr = databuffer;
-	DBGC(F("ReadlineSocket: "));
-	//-1 for 0 index
-	//-1 for space to add a char
-	//-1 to fit a null char so
-	while (client->available() && (dataptr < &databuffer[SOCKET_RX_BUFFER_SIZE-3])) {
-		char c = client->read();
-		if (c == 0){
-			;
-		}
-		else if (c == -1){
-			break;
-		}
-		else {
-			DBGC(c);
-			*dataptr++ = c;
-			numBytes++;
-		}
-	}
-	*dataptr = 0;
-	DBGCN();
-	return numBytes;
 }
 
 //wifi client->print has a buffer that so far we've been unable to locate
