@@ -1,0 +1,16 @@
+{
+  "name": "node_client",
+  "version": "0.1.0",
+  "description": "A sample node client that talks through skynet to an arduino loaded with skynet firmware",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luis Montes",
+  "license": "LGPL",
+  "dependencies": {
+    "firmata": "git+ssh://git@github.com:monteslu/firmata",
+    "skynet": "*",
+    "skynet-serial": "*"
+  }
+}
