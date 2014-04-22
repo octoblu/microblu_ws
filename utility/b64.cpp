@@ -19,9 +19,9 @@ void b64::send(ringbuffer &buffer, Client &out)
 		//grab 3 chars if available
 		do
 		{	
-			DBGC("c");
+			DBGCS("c");
 			DBGC((int)i%3);
-			DBGC(": ");
+			DBGCS(": ");
 			DBGCN((int)(buffer.peek()));
 			c[i%3]=buffer.pop();
       		i++;
@@ -32,14 +32,14 @@ void b64::send(ringbuffer &buffer, Client &out)
 			d0 = (c[0] >> 2) & 63;
 			d1 = ((c[0] << 4) & 48) | ((c[1] >> 4) & 15);
 
-			DBGC("d0: ");
+			DBGCS("d0: ");
 			DBGC((int)d0);
-			DBGC(" : ");
+			DBGCS(" : ");
 			DBGC(lookup(d0));
 			out.print( lookup(d0) );
-			DBGC("d1: ");
+			DBGCS("d1: ");
 			DBGC((int)d1);
-			DBGC(" : ");
+			DBGCS(" : ");
 			DBGC(lookup(d1));
 			out.print( lookup(d1) );
 			DBGC('=');
@@ -53,21 +53,21 @@ void b64::send(ringbuffer &buffer, Client &out)
 			d1 = ((c[0] << 4) & 48) | ((c[1] >> 4) & 15);
 			d2 = ((c[1] << 2) & 60) | ((c[2] >> 6) & 3);
 
-			DBGC("d0: ");
+			DBGCS("d0: ");
 			DBGC((int)d0);
-			DBGC(" : ");
+			DBGCS(" : ");
 			DBGC(lookup(d0));
 			out.print(lookup(d0));
 
-			DBGC("d1: ");
+			DBGCS("d1: ");
 			DBGC((int)d1);
-			DBGC(" : ");
+			DBGCS(" : ");
 			DBGC(lookup(d1));
 			out.print(lookup(d1));
 
-			DBGC("d2: ");
+			DBGCS("d2: ");
 			DBGC((int)d2);
-			DBGC(" : ");
+			DBGCS(" : ");
 			DBGC(lookup(d2));
 			out.print(lookup(d2));
 			DBGC('=');
@@ -80,25 +80,25 @@ void b64::send(ringbuffer &buffer, Client &out)
 			d2 = ((c[1] << 2) & 60) | ((c[2] >> 6) & 3);
 			d3 = c[2] & 63;
 
-			DBGC("d0: ");
+			DBGCS("d0: ");
 			DBGC((int)d0);
-			DBGC(" : ");
+			DBGCS(" : ");
 			DBGC(lookup(d0));
 			out.print(lookup(d0));
 
-			DBGC("d1: ");
+			DBGCS("d1: ");
 			DBGC((int)d1);
-			DBGC(" : ");
+			DBGCS(" : ");
 			DBGC(lookup(d1));
 			out.print(lookup(d1));
 
-			DBGC("d2: ");
+			DBGCS("d2: ");
 			DBGC((int)d2);
 			DBGC(" : ");
 			DBGC(lookup(d2));
 			out.print(lookup(d2));
 
-			DBGC("d3: ");
+			DBGCS("d3: ");
 			DBGC((int)d3);
 			DBGC(" : ");
 			DBGC(lookup(d3));
@@ -134,17 +134,17 @@ void b64::decodestore(char *src, ringbuffer &buffer)
 		//grab 4 chars if available
 		do
 		{
-			DBGC("c");
+			DBGCS("c");
 			DBGC(i%4);
-			DBGC(": ");
+			DBGCS(": ");
 			DBGC(src[i]);
-			DBGC(": ");
+			DBGCS(": ");
 			DBGCN((int)reverselookup(src[i]));
 			c[i%4]=reverselookup(src[i++]);
 		}while( src[i] != '\0' && i%4 != 0 );
 
 		d0 = ((c[0] << 2) & 252) | (c[1] >>4 & 3);
-		DBGC("d0: ");
+		DBGCS("d0: ");
 		DBGCN(d0, HEX);
     	buffer.push(d0);
     	
@@ -152,7 +152,7 @@ void b64::decodestore(char *src, ringbuffer &buffer)
 		if(c[3] != -1)
 		{
 			d1 = ((c[1] << 4) & 240) | (c[2] >>2 & 15);
-			DBGC("d1: ");
+			DBGCS("d1: ");
 			DBGCN(d1, HEX);
     		buffer.push(d1);
 		}
@@ -161,7 +161,7 @@ void b64::decodestore(char *src, ringbuffer &buffer)
 		if(c[2] != -1)
 		{
 			d2 = ((c[2] << 6) & 192) | (c[3] & 63);
-			DBGC("d2: ");
+			DBGCS("d2: ");
 			DBGCN(d2, HEX);
 	    	buffer.push(d2);
 	    }

@@ -17,18 +17,18 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	status = 0;
 	bind = 0;
 
-	DBGCN(F("Connecting TCP"));
+	DBGCSN("Connecting TCP");
 
 	//connect tcp or fail
 	if (!client->connect(host, port))
 	{
 		client->stop();
-		DBGCN(F("TCP Failed"));
+		DBGCSN("TCP Failed");
 		return false;
 	}
 
-	client->println(F("POST /socket.io/1/ HTTP/1.1"));
-	client->print(F("Host: "));
+	client->println("POST /socket.io/1/ HTTP/1.1");
+	client->print("Host: ");
 	client->println(host);
 	client->println("\r\n");
 
@@ -36,14 +36,14 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	if(!waitSocketData())
 	{
 		client->stop();
-		DBGCN(F("Post Failed"));
+		DBGCSN("Post Failed");
 		return false;
 	}
 
 	//check for OK or return
 	if(readLine(databuffer, SOCKET_RX_BUFFER_SIZE) == 0 || strstr (databuffer,"200") == NULL){
 		client->stop();
-		DBGCN(F("No Initial OK response"));
+		DBGCSN("No Initial OK response");
 		return false;
 	}
 
@@ -52,7 +52,7 @@ int SkynetClient::connect(const char* host, uint16_t port)
 		if(readLine(databuffer, SOCKET_RX_BUFFER_SIZE)==0)
 		{
 			client->stop();
-			DBGCN(F("Malformed POST response"));
+			DBGCSN("Malformed POST response");
 			return false;
 		}
 	}
@@ -60,7 +60,7 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	//find the end of sid or return
 	char *pch = strchr(databuffer,':');
 	if(pch==NULL){
-		DBGCN(F("No SID response"));
+		DBGCSN("No SID response");
 		client->stop();
 		return false;
 	}
@@ -72,35 +72,35 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	//turn the colon into a null char for printing
 	*pch = 0;
 	
-	DBGC(F("SID: "));
+	DBGCS("SID: ");
 	DBGCN(databuffer);
 	
-	client->print(F("GET /socket.io/1/websocket/"));
+	client->print("GET /socket.io/1/websocket/");
 	client->print(databuffer);
-	client->println(F(" HTTP/1.1"));
-	client->print(F("Host: "));
+	client->println(" HTTP/1.1");
+	client->print("Host: ");
 	client->println(host);
-	client->println(F("Upgrade: WebSocket"));
-	client->println(F("Connection: Upgrade"));
-	client->println(F("\r\n"));
+	client->println("Upgrade: WebSocket");
+	client->println("Connection: Upgrade");
+	client->println("\r\n");
 
 	//receive data or return
 	if(!waitSocketData())
 	{
 		client->stop();
-		DBGCN(F("GET Failed"));
+		DBGCSN("GET Failed");
 		return false;
 	}
 	
 	//check for OK or return
 	if(readLine(databuffer, SOCKET_RX_BUFFER_SIZE) == 0 || strstr (databuffer,"101") == NULL)
 	{
-		DBGCN(F("No Final OK response"));
+		DBGCSN("No Final OK response");
 		client->stop();
 		return false;
 	}
 
-	DBGCN(F("Websocket Connected"));
+	DBGCSN("Websocket Connected");
 
 	//dump the rest of the response
 	for(int i = 0; i<5; i++){
@@ -140,15 +140,16 @@ uint8_t SkynetClient::readLine(char *buf, uint8_t max)
 				break;
 			case 10:
 			case -1:
-				DBGCN(buf);
 				buf[count++]=0;
+				DBGCN();
 				return count;
 			default:
+				DBGC(c);
 				buf[count++]=c;
 		}
 	}
 	buf[count++]=0;
-	DBGCN(buf);
+	DBGCN();
 	return count;
 }
 
@@ -168,10 +169,10 @@ int SkynetClient::monitor()
 {
 	//if we've expired, reconnect to skynet at least
 	if(status == 1 && (unsigned long)(millis() - lastBeat) >= HEARTBEATTIMEOUT){
-		DBGC(F("Timeout: "));
+		DBGCS("Timeout: ");
 		DBGCN(millis());
 
-		DBGC(F("lastbeat: "));
+		DBGCS("lastbeat: ");
 		DBGCN(lastBeat);
 
 		stop();
@@ -200,7 +201,7 @@ int SkynetClient::monitor()
 
 			strncpy(ack, first+1, ackSize);
 			ack[ackSize] = '\0';
-			DBGC(F("ack: "));
+			DBGCS("ack: ");
 			DBGCN(ack);
 		}
 
@@ -212,38 +213,38 @@ int SkynetClient::monitor()
 	
 			//disconnect
 			case '0':
-				DBGCN(F("Disconnect"));
+				DBGCSN("Disconnect");
 				stop();
 				break;
 			
 			//messages
 			case '1':
-				DBGCN(F("Socket Connect"));
+				DBGCSN("Socket Connect");
 				break;
 				
 			case '3':
-				DBGCN(F("Data"));
+				DBGCSN("Data");
 				b64::decodestore(dataptr, rxbuf);
 				break;
 
 			case '5':	
-				DBGCN(F("Message"));
+				DBGCSN("Message");
 				processSkynet(dataptr, ack);
 				break;
 				
 			//hearbeat
 			case '2':
-				DBGC(F("Heartbeat at: "));
+				DBGCS("Heartbeat at: ");
 				lastBeat = millis();
 				DBGCN(lastBeat);
 				client->print((char)0);
-				client->print(F("2::"));
+				client->print("2::");
 				client->print((char)255);
 				break;
 
 		    //huh?
 			default:
-				DBGC(F("Drop: "));
+				DBGCS("Drop: ");
 				DBGCN(socketType);
 				break;
 		}
@@ -257,7 +258,7 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 	char token[TOKENSIZE];
 	char uuid[UUIDSIZE];
 
-    DBGC(F("Sending: "));
+    DBGCS("Sending: ");
 
     DBGC((char)0);
 	client->print((char)0);
@@ -289,7 +290,7 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 //lookup uuid and token if we have them and send in for validation
 void SkynetClient::processReady(char *data, jsmntok_t *tok)
 {
-	DBGCN(F("Skynet Connect"));
+	DBGCSN("Skynet Connect");
 
 	char token[TOKENSIZE];
 	char uuid[UUIDSIZE];
@@ -301,10 +302,10 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
     //if token has been refreshed, save it
     if (!TOKEN_STRING(data, tok[15], token ))
     {
-		DBGCN(F("token refresh"));
+		DBGCSN("token refresh");
 	  	strncpy(token, data + tok[15].start, tok[15].end - tok[15].start);
 
-        DBGC(F("new: "));
+        DBGCS("new: ");
       	DBGCN(token);
       
 	  	eeprom_write_bytes(TOKENADDRESS, token, TOKENSIZE);
@@ -314,7 +315,7 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
 
     }else
     {
-		DBGCN(F("no token refresh necessary"));
+		DBGCSN("no token refresh necessary");
     }
 	
 	getUuid(uuid);
@@ -322,10 +323,10 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
     //if uuid has been refreshed, save it
     if (!TOKEN_STRING(data, tok[13], uuid ))
     {
-      	DBGCN(F("uuid refresh"));
+      	DBGCSN("uuid refresh");
 		strncpy(uuid, data + tok[13].start, tok[13].end - tok[13].start);
 		
-      	DBGC(F("new: "));
+      	DBGCS("new: ");
       	DBGCN(uuid);
 		
       	eeprom_write_bytes(UUIDADDRESS, uuid, UUIDSIZE);
@@ -335,14 +336,14 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
 
      }else
      {
-       	DBGCN(F("no uuid refresh necessary"));
+       	DBGCSN("no uuid refresh necessary");
      }
 }
 
 //Credentials have been invalidted, send blank identify for new ones
 void SkynetClient::processNotReady(char *data, jsmntok_t *tok)
 {
-    DBGC(F("Sending: "));
+    DBGCS("Sending: ");
 
     DBGC((char)0);
 	client->print((char)0);
@@ -364,12 +365,12 @@ void SkynetClient::processBind(char *data, jsmntok_t *tok, char *ack)
 
 	DBGCN(BIND);
 
-    DBGC(F("Sending: "));
+    DBGCS("Sending: ");
 
     DBGC((char)0);
 	client->print((char)0);
 
-    DBGC("6:::");
+    DBGCS("6:::");
 	client->print("6:::");
 
 	DBGC(ack);
@@ -403,39 +404,39 @@ void SkynetClient::processSkynet(char *data, char *ack)
 
 	int r = jsmn_parse(&p, data, tok, MAX_PARSE_OBJECTS);
 	if (r != 0){
-	    DBGCN(F("parse failed"));
+	    DBGCSN("parse failed");
 		DBGCN(r);
 		return;
 	}
 
     if (TOKEN_STRING(data, tok[2], IDENTIFY )) 
     {
-		DBGCN(IDENTIFY);
+		DBGCSN(IDENTIFY);
 		processIdentify(data, tok);
     } 
     else if (TOKEN_STRING(data, tok[2], READY )) 
     {
-		DBGCN(READY);
+		DBGCSN(READY);
 		processReady(data, tok);
     }
     else if (TOKEN_STRING(data, tok[2], NOTREADY )) 
     {
-		DBGCN(NOTREADY);
+		DBGCSN(NOTREADY);
 		processNotReady(data, tok);
     }
     else if (TOKEN_STRING(data, tok[2], BIND )) 
     {
-		DBGCN(BIND);
+		DBGCSN(BIND);
 		processBind(data, tok, ack);
     }
     else if (TOKEN_STRING(data, tok[2], MESSAGE )) 
     {
-		DBGCN(MESSAGE);
+		DBGCSN(MESSAGE);
 		processMessage(data, tok);
     }
     else
     {
-		DBGC(F("Unknown:"));
+		DBGCS("Unknown:");
     }
 }
 
@@ -477,7 +478,7 @@ void SkynetClient::printToken(const char *js, jsmntok_t t)
 }
 
 size_t SkynetClient::write(const uint8_t *buf, size_t size) {
-    DBGC(F("Sending2: "));
+    DBGCS("Sending2: ");
 
     DBGC((char)0);
 	client->print((char)0);
@@ -497,7 +498,7 @@ size_t SkynetClient::write(const uint8_t *buf, size_t size) {
 size_t SkynetClient::write(uint8_t c)
 {
 	if(bind){
-		DBGC(F("Storing: "));
+		DBGCS("Storing: ");
 
 	    DBGCN((char)c);
 
@@ -506,7 +507,7 @@ size_t SkynetClient::write(uint8_t c)
 		return 1;
 	}
 	else{
-		DBGC(F("Not bound, NOT Storing: "));
+		DBGCS("Not bound, NOT Storing: ");
 	    DBGCN((char)c);
 
 		return 0;
@@ -516,7 +517,7 @@ size_t SkynetClient::write(uint8_t c)
 void SkynetClient::flush()
 {
 	if(txbuf.available()){
-		DBGC(F("Sending: "));
+		DBGCS("Sending: ");
 	
 	    DBGC((char)0);
 		client->print((char)0);
@@ -594,7 +595,7 @@ void SkynetClient::getUuid(char *uuid){
 
 void SkynetClient::sendMessage(const char *device, char const *object)
 {
-	DBGC(F("Sending: "));
+	DBGCS("Sending: ");
 
     DBGC((char)0);
 	client->print((char)0);

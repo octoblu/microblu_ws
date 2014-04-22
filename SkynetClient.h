@@ -11,11 +11,22 @@
 
 #define SKYNETCLIENT_DEBUG
 #ifdef SKYNETCLIENT_DEBUG
-#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
-#define DBGC( ... ) Serial.print( __VA_ARGS__ )
+	#ifdef PSTR
+		#define DBGCSN( ... ) Serial.println( F(__VA_ARGS__) )
+		#define DBGCS( ... ) Serial.print( F(__VA_ARGS__) )
+		#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
+		#define DBGC( ... ) Serial.print( __VA_ARGS__ )
+	#else
+		#define DBGCSN( ... ) Serial.println( __VA_ARGS__ )
+		#define DBGCS( ... ) Serial.print( __VA_ARGS__ )
+		#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
+		#define DBGC( ... ) Serial.print( __VA_ARGS__ )
+	#endif
 #else
-#define DBGCN( ... )
-#define DBGC( ... )
+	#define DBGCN( ... )
+	#define DBGC( ... )
+	#define DBGCSN( ... )
+	#define DBGCS( ... )
 #endif
 
 #define NAME "name"

@@ -10,9 +10,13 @@
 #ifdef B64_DEBUG
 #define DBGCN( ... ) Serial.println( __VA_ARGS__ )
 #define DBGC( ... ) Serial.print( __VA_ARGS__ )
+#define DBGCSN( ... ) Serial.println( F(__VA_ARGS__) )
+#define DBGCS( ... ) Serial.print( F(__VA_ARGS__) )
 #else
 #define DBGCN( ... )
 #define DBGC( ... )
+#define DBGCSN( ... )
+#define DBGCS( ... )
 #endif
 
 class b64 {
