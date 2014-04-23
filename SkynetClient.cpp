@@ -255,8 +255,7 @@ int SkynetClient::monitor()
 //Got credentials back, store if necessary
 void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 {
-	char token[TOKENSIZE];
-	char uuid[UUIDSIZE];
+	char temp[UUIDSIZE];
 
     DBGCS("Sending: ");
 
@@ -271,15 +270,15 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 	
 	if( EEPROM.read( (uint8_t)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
 	{
-		getToken(token);
-
-		getUuid(uuid);
+		getUuid(temp);
 
 		printByByte("\", \"uuid\":\"");
-		printByByte(uuid);
+		printByByte(temp);
+
+		getToken(temp);
 
 		printByByte("\", \"token\":\"");
-		printByByte(token);
+		printByByte(temp);
 	}
 	printByByte("\"}]}");
   
@@ -292,23 +291,43 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
 {
 	DBGCSN("Skynet Connect");
 
-	char token[TOKENSIZE];
-	char uuid[UUIDSIZE];
+	char temp[UUIDSIZE];
 
 	status = 1;
 	
-    getToken(token);
+	getUuid(temp);
+
+    //if uuid has been refreshed, save it
+    if (!TOKEN_STRING(data, tok[13], temp ))
+    {
+      	DBGCSN("uuid refresh");
+		strncpy(temp, data + tok[13].start, tok[13].end - tok[13].start);
+		
+      	DBGCS("new: ");
+      	DBGCN(temp);
+		
+      	eeprom_write_bytes(UUIDADDRESS, temp, UUIDSIZE);
+		
+		//write block identifier, arduino should protect us from writing if it doesnt need it?
+      	EEPROM.write((uint8_t )EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
+
+    }else
+    {
+    	DBGCSN("no uuid refresh necessary");
+    }
+
+    getToken(temp);
 	
     //if token has been refreshed, save it
-    if (!TOKEN_STRING(data, tok[15], token ))
+    if (!TOKEN_STRING(data, tok[15], temp ))
     {
 		DBGCSN("token refresh");
-	  	strncpy(token, data + tok[15].start, tok[15].end - tok[15].start);
+	  	strncpy(temp, data + tok[15].start, tok[15].end - tok[15].start);
 
         DBGCS("new: ");
-      	DBGCN(token);
+      	DBGCN(temp);
       
-	  	eeprom_write_bytes(TOKENADDRESS, token, TOKENSIZE);
+	  	eeprom_write_bytes(TOKENADDRESS, temp, TOKENSIZE);
 
 		//write block identifier, arduino should protect us from writing if it doesnt need it?
       	EEPROM.write((uint8_t)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
@@ -317,27 +336,7 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
     {
 		DBGCSN("no token refresh necessary");
     }
-	
-	getUuid(uuid);
 
-    //if uuid has been refreshed, save it
-    if (!TOKEN_STRING(data, tok[13], uuid ))
-    {
-      	DBGCSN("uuid refresh");
-		strncpy(uuid, data + tok[13].start, tok[13].end - tok[13].start);
-		
-      	DBGCS("new: ");
-      	DBGCN(uuid);
-		
-      	eeprom_write_bytes(UUIDADDRESS, uuid, UUIDSIZE);
-		
-		//write block identifier, arduino should protect us from writing if it doesnt need it?
-      	EEPROM.write((uint8_t )EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
-
-     }else
-     {
-       	DBGCSN("no uuid refresh necessary");
-     }
 }
 
 //Credentials have been invalidted, send blank identify for new ones

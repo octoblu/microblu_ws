@@ -9,7 +9,7 @@
 #include "utility/b64.h"
 #include <JsonParser.h>
 
-#define SKYNETCLIENT_DEBUG
+//#define SKYNETCLIENT_DEBUG
 #ifdef SKYNETCLIENT_DEBUG
 	#ifdef PSTR
 		#define DBGCSN( ... ) Serial.println( F(__VA_ARGS__) )
