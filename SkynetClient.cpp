@@ -8,6 +8,27 @@
 ringbuffer txbuf(SKYNET_TX_BUFFER_SIZE);
 ringbuffer rxbuf(SKYNET_RX_BUFFER_SIZE);
 
+char IDENTIFY1[] PROGMEM = { "{\"name\":\"identity\",\"args\":[{\"socketid\":\"" } ;
+char IDENTIFY2[] PROGMEM = { "\", \"uuid\":\"" } ;
+char IDENTIFY3[] PROGMEM = { "\", \"token\":\"" } ;
+char CLOSE[] PROGMEM = { "\"}]}" } ;
+
+char BIND1[] PROGMEM = { "+[{\"result\":\"ok\"}]" } ;
+
+char MESSAGE1[] PROGMEM = { "{\"name\":\"message\",\"args\":[{\"devices\":\"" } ;
+char MESSAGE2[] PROGMEM = { "\",\"payload\":\"" } ;
+
+#define IDENTIFY "identify"
+#define READY "ready"
+#define NOTREADY "notReady"
+#define BIND "bindSocket"
+#define MESSAGE "message"
+
+#define EMIT "5:::"
+#define MSG "3:::"
+#define HEARTBEAT "2::"
+
+
 SkynetClient::SkynetClient(Client &_client){
 	this->client = &_client; 
 }
@@ -266,22 +287,22 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
     DBGC(EMIT);	
 	client->print(EMIT);
 
-	printByByte("{\"name\":\"identity\",\"args\":[{\"socketid\":\"");
+	printByByteF(IDENTIFY1);
 	printToken(data, tok[7]);
 	
 	if( EEPROM.read( (uint8_t)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
 	{
 		getUuid(temp);
 
-		printByByte("\", \"uuid\":\"");
+		printByByteF(IDENTIFY2);
 		printByByte(temp);
 
 		getToken(temp);
 
-		printByByte("\", \"token\":\"");
+		printByByteF(IDENTIFY3);
 		printByByte(temp);
 	}
-	printByByte("\"}]}");
+	printByByteF(CLOSE);
   
 	DBGCN((char)255);
 	client->print((char)255);
@@ -343,9 +364,9 @@ void SkynetClient::processNotReady(char *data, jsmntok_t *tok)
     DBGC(EMIT);	
 	client->print(EMIT);
 
-	printByByte("{\"name\":\"identity\",\"args\":[{\"socketid\":\"");
+	printByByteF(IDENTIFY1);
 	printToken(data, tok[11]);
-	printByByte("\"}]}");
+	printByByteF(CLOSE);
   
 	DBGCN((char)255);
 	client->print((char)255);
@@ -368,7 +389,7 @@ void SkynetClient::processBind(char *data, jsmntok_t *tok, char *ack)
 	DBGC(ack);
 	client->print(ack);
 
-	printByByte("+[{\"result\":\"ok\"}]");
+	printByByteF(BIND1);
   
 	DBGCN((char)255);
 	client->print((char)255);
@@ -444,6 +465,15 @@ void SkynetClient::printByByte(const char *data, size_t size) {
 			client->print(data[i++]);
 		}
 	}
+}
+
+//wifi client->print has a buffer that so far we've been unable to locate
+//under 154 (our identify size) for sure.. so sending char by char for now
+void SkynetClient::printByByteF(PGM_P data) 
+{
+	char buffer[MAX_FLASH_STRING];
+	strcpy_P(buffer, data);
+	printByByte(buffer);
 }
 
 //wifi client->print has a buffer that so far we've been unable to locate
@@ -613,11 +643,11 @@ void SkynetClient::sendMessage(const char *device, char const *object)
     DBGC(EMIT);	
 	client->print(EMIT);
 
-	printByByte("{\"name\":\"message\",\"args\":[{\"devices\":\"");
+	printByByteF(MESSAGE1);
 	printByByte(device);
-	printByByte("\",\"payload\":\"");
+	printByByteF(MESSAGE2);
 	printByByte(object);
-	printByByte("\"}]}");
+	printByByteF(CLOSE);
 
 	DBGCN((char)255);
 	client->print((char)255);

@@ -29,28 +29,6 @@
 	#define DBGCS( ... )
 #endif
 
-#define NAME "name"
-#define IDENTITY "identity"
-#define IDENTIFY "identify"
-#define ARGS "args"
-#define SOCKETID "socketid"
-#define READY "ready"
-#define NOTREADY "notReady"
-#define API "api"
-#define CONNECT "connect"
-#define STATUS "status"
-#define UUID "uuid"
-#define TOKEN "token"
-#define MESSAGE "message"
-#define BIND "bindSocket"
-#define PAYLOAD "payload"
-#define DEVICES "devices"
-#define EMIT "5:::"
-#define MSG "3:::"
-#define HEARTBEAT "2::"
-#define FROMUUID "fromUuid"
-#define DATA "data"
-
 #define SID_MAXLEN 24
 #define UUIDSIZE 37
 #define TOKENSIZE 33
@@ -65,6 +43,7 @@
 #define UUIDADDRESS TOKENADDRESS+TOKENSIZE
 
 #define MAX_PARSE_OBJECTS 16 //16 needed for Ready from Skynet
+#define MAX_FLASH_STRING 50 //for PROGMEM strings
 
 // Length of static data buffers
 #define SOCKET_RX_BUFFER_SIZE 186 //186 needed for biggest skynet message, READY
@@ -107,6 +86,7 @@ class SkynetClient : public Stream {
 		unsigned long lastBeat;
         MessageDelegate messageDelegate;
 
+		void printByByteF(PGM_P data);
 		void printByByte(const char *data);
 		void printByByte(const char *data, size_t size);
 		void printToken(const char *js, jsmntok_t t);
