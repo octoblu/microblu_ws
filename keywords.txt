@@ -28,6 +28,8 @@ connected KEYWORD2
 monitor KEYWORD2
 getToken KEYWORD2
 getUuid KEYWORD2
+setToken KEYWORD2
+setUuid KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

@@ -9,7 +9,7 @@
 #include "utility/b64.h"
 #include <JsonParser.h>
 
-//#define SKYNETCLIENT_DEBUG
+#define SKYNETCLIENT_DEBUG
 #ifdef SKYNETCLIENT_DEBUG
 	#ifdef PSTR
 		#define DBGCSN( ... ) Serial.println( F(__VA_ARGS__) )
@@ -96,6 +96,8 @@ class SkynetClient : public Stream {
 		int monitor();
 		void getUuid(char *uuid);
 		void getToken(char *token);
+		void setUuid(char *uuid);
+		void setToken(char *token);
 		
 	private:
 		Client* client;

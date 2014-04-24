@@ -57,26 +57,27 @@ int SkynetClient::connect(const char* host, uint16_t port)
 		}
 	}
 		
-	//find the end of sid or return
-	char *pch = strchr(databuffer,':');
-	if(pch==NULL){
-		DBGCSN("No SID response");
-		client->stop();
-		return false;
+	//get the sid out of buffer
+	char sid[SID_MAXLEN+1];
+
+	int i = 0;
+
+	while((char)databuffer[i] != ':'){
+	   sid[i]=databuffer[i];
+	   i++;
 	}
+ 
+	sid[i++]=0;
+
+	DBGCS("SID: ");
+	DBGCN(sid);
 
 	//dump the remaining response
 	while(client->available())
 		client->read();
 
-	//turn the colon into a null char for printing
-	*pch = 0;
-	
-	DBGCS("SID: ");
-	DBGCN(databuffer);
-	
 	client->print("GET /socket.io/1/websocket/");
-	client->print(databuffer);
+	client->print(sid);
 	client->println(" HTTP/1.1");
 	client->print("Host: ");
 	client->println(host);
@@ -252,7 +253,7 @@ int SkynetClient::monitor()
 	return status;
 }
 
-//Got credentials back, store if necessary
+//lookup uuid and token if we have them and send in for validation
 void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 {
 	char temp[UUIDSIZE];
@@ -286,7 +287,7 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 	client->print((char)255);
 }
 
-//lookup uuid and token if we have them and send in for validation
+//Got credentials back, store if necessary
 void SkynetClient::processReady(char *data, jsmntok_t *tok)
 {
 	DBGCSN("Skynet Connect");
@@ -306,11 +307,7 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
       	DBGCS("new: ");
       	DBGCN(temp);
 		
-      	eeprom_write_bytes(UUIDADDRESS, temp, UUIDSIZE);
-		
-		//write block identifier, arduino should protect us from writing if it doesnt need it?
-      	EEPROM.write((uint8_t )EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
-
+      	setUuid(temp);
     }else
     {
     	DBGCSN("no uuid refresh necessary");
@@ -327,11 +324,7 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
         DBGCS("new: ");
       	DBGCN(temp);
       
-	  	eeprom_write_bytes(TOKENADDRESS, temp, TOKENSIZE);
-
-		//write block identifier, arduino should protect us from writing if it doesnt need it?
-      	EEPROM.write((uint8_t)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
-
+		setToken(temp);
     }else
     {
 		DBGCSN("no token refresh necessary");
@@ -582,14 +575,32 @@ void SkynetClient::eeprom_read_bytes(int address, char *buf, int bufSize){
   }
 }
 
-void SkynetClient::getToken(char *token){
+void SkynetClient::getToken(char *token)
+{
 	eeprom_read_bytes(TOKENADDRESS, token, TOKENSIZE);
 	token[TOKENSIZE-1]='\0'; //in case courrupted or not defined
 }
 
-void SkynetClient::getUuid(char *uuid){
+void SkynetClient::setToken(char *token)
+{
+	eeprom_write_bytes(TOKENADDRESS, token, TOKENSIZE);
+	
+	//write block identifier, arduino should protect us from writing if it doesnt need it?
+  	EEPROM.write((uint8_t )EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
+}
+
+void SkynetClient::getUuid(char *uuid)
+{
 	eeprom_read_bytes(UUIDADDRESS, uuid, UUIDSIZE);
 	uuid[UUIDSIZE-1]='\0'; //in case courrupted or not defined
+}
+
+void SkynetClient::setUuid(char *uuid)
+{
+	eeprom_write_bytes(UUIDADDRESS, uuid, UUIDSIZE);
+
+	//write block identifier, arduino should protect us from writing if it doesnt need it?
+	EEPROM.write((uint8_t)EEPROMBLOCKADDRESS, (uint8_t)EEPROMBLOCK); 
 }
 
 void SkynetClient::sendMessage(const char *device, char const *object)
