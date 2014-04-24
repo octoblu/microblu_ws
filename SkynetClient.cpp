@@ -27,10 +27,10 @@ int SkynetClient::connect(const char* host, uint16_t port)
 		return false;
 	}
 
-	client->println("POST /socket.io/1/ HTTP/1.1");
-	client->print("Host: ");
+	client->println(F("POST /socket.io/1/ HTTP/1.1"));
+	client->print(F("Host: "));
 	client->println(host);
-	client->println("\r\n");
+	client->println(F("\r\n"));
 
 	//receive data or return
 	if(!waitSocketData())
@@ -76,14 +76,14 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	while(client->available())
 		client->read();
 
-	client->print("GET /socket.io/1/websocket/");
+	client->print(F("GET /socket.io/1/websocket/"));
 	client->print(sid);
-	client->println(" HTTP/1.1");
-	client->print("Host: ");
+	client->println(F(" HTTP/1.1"));
+	client->print(F("Host: "));
 	client->println(host);
-	client->println("Upgrade: WebSocket");
-	client->println("Connection: Upgrade");
-	client->println("\r\n");
+	client->println(F("Upgrade: WebSocket"));
+	client->println(F("Connection: Upgrade"));
+	client->println(F("\r\n"));
 
 	//receive data or return
 	if(!waitSocketData())
@@ -239,7 +239,7 @@ int SkynetClient::monitor()
 				lastBeat = millis();
 				DBGCN(lastBeat);
 				client->print((char)0);
-				client->print("2::");
+				client->print(F("2::"));
 				client->print((char)255);
 				break;
 
@@ -363,7 +363,7 @@ void SkynetClient::processBind(char *data, jsmntok_t *tok, char *ack)
 	client->print((char)0);
 
     DBGCS("6:::");
-	client->print("6:::");
+	client->print(F("6:::"));
 
 	DBGC(ack);
 	client->print(ack);
