@@ -46,7 +46,7 @@
 #define MAX_FLASH_STRING 50 //for PROGMEM strings
 
 // Length of static data buffers
-#define SOCKET_RX_BUFFER_SIZE 186 //186 needed for biggest skynet message, READY
+#define SOCKET_RX_BUFFER_SIZE 250 //186 needed for biggest skynet message, READY
 #define SKYNET_TX_BUFFER_SIZE 150 //~150 is needed for firmata's capability query on an uno
 #define SKYNET_RX_BUFFER_SIZE 32
 
@@ -58,6 +58,7 @@ class SkynetClient : public Stream {
 
 		void setMessageDelegate(MessageDelegate messageDelegate);
 		void sendMessage(const char* device, char const *object);
+		void logMessage(char const *object);
 
 	    int connect(const char *host, uint16_t port);
 	    size_t write(uint8_t c);

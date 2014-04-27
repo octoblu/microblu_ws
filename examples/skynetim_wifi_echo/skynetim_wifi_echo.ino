@@ -9,14 +9,15 @@
  * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR
  * THE INTERNET OF THINGS.
  *
+ * This sketch parses any messages it receives and echos them back to the
+ * sender.
+ *
  * Works with ethernet shields compatible with EthernetClient library from
  * Arduino. If you don't know, grab the original
  * http://arduino.cc/en/Main/ArduinoEthernetShield
  *
  * Also requires the ArduinoJsonParser 
  * https://github.com/bblanchon/ArduinoJsonParser 
- *
- * This sketch is VERY big both in program space and ram.
  *
  * You will notice we're using F() in Serial.print. It is covered briefly on
  * the arduino print page but it means we can store our strings in program

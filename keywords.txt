@@ -14,6 +14,7 @@ SkynetClient	KEYWORD1
 
 setMessageDelegate KEYWORD2
 sendMessage KEYWORD2
+logMessage KEYWORD2
 connect		KEYWORD2
 write		KEYWORD2
 writeRaw	KEYWORD2

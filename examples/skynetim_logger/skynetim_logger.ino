@@ -9,8 +9,8 @@
  * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR 
  * THE INTERNET OF THINGS.
  * 
- * This sketch parses any messages it receives and echos them back to the
- * sender.
+ * This sketch send data to the Skynet data endpoint for logging and graphing
+ * by skynet itself!
  *
  * Works with ethernet shields compatible with EthernetClient library from
  * Arduino. If you don't know, grab the original 
@@ -53,34 +53,6 @@ void setup()
     for(;;)
       ;
   }
-  
-  skynetclient.setMessageDelegate(onMessage);
-}
-
-void onMessage(const char * const data) {
-  
-  JsonParser<16> parser;
-
-  Serial.print("Parse ");
-  Serial.println(data);
-
-  JsonHashTable hashTable = parser.parseHashTable((char*)data);
-
-  if (!hashTable.success())
-  {
-      Serial.println("JsonParser.parseHashTable() failed");
-      return;
-  }
-    
-  char* payload = hashTable.getString("payload");
-  Serial.print("payload=");
-  Serial.println(payload);
-    
-  char* fromUuid = hashTable.getString("fromUuid");
-  Serial.print("fromUuid=");
-  Serial.println(fromUuid);
-
-  skynetclient.sendMessage(fromUuid, payload);
 }
 
 void loop() {
@@ -103,4 +75,9 @@ void loop() {
     Serial.print(F("token: "));
     Serial.println(uuid);   
   }
+
+  //message to log MUST be comma seperated key value pair(s) and may
+  //not be be an object or array
+  skynetclient.logMessage("\"humidity\":123,\"temperature\":\"21C\"");
+  delay(10000);
 }

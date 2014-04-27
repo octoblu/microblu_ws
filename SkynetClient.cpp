@@ -8,6 +8,9 @@
 ringbuffer txbuf(SKYNET_TX_BUFFER_SIZE);
 ringbuffer rxbuf(SKYNET_RX_BUFFER_SIZE);
 
+char LOG1[] PROGMEM = { "{\"name\":\"data\",\"args\":[{" } ;
+char LOG2[] PROGMEM = { ", \"uuid\":\"" } ;
+
 char IDENTIFY1[] PROGMEM = { "{\"name\":\"identity\",\"args\":[{\"socketid\":\"" } ;
 char IDENTIFY2[] PROGMEM = { "\", \"uuid\":\"" } ;
 char IDENTIFY3[] PROGMEM = { "\", \"token\":\"" } ;
@@ -647,6 +650,37 @@ void SkynetClient::sendMessage(const char *device, char const *object)
 	printByByte(device);
 	printByByteF(MESSAGE2);
 	printByByte(object);
+	printByByteF(CLOSE);
+
+	DBGCN((char)255);
+	client->print((char)255);
+}
+
+void SkynetClient::logMessage(char const *object)
+{
+	char temp[UUIDSIZE];
+
+
+	DBGCS("Logging: ");
+
+    DBGC((char)0);
+	client->print((char)0);
+
+    DBGC(EMIT);	
+	client->print(EMIT);
+
+	printByByteF(LOG1);
+
+	printByByte(object);
+
+	printByByteF(LOG2);
+	getUuid(temp);
+	printByByte(temp);
+
+	printByByteF(IDENTIFY3);
+	getToken(temp);
+	printByByte(temp);
+
 	printByByteF(CLOSE);
 
 	DBGCN((char)255);
