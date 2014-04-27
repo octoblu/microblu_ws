@@ -155,7 +155,7 @@ uint8_t SkynetClient::readLine(char *buf, uint8_t max)
 {
 	int count = 0;
 
-	while(count < max)
+	while(count < max-1)
 	{
 		char c = client->read();
 		switch (c)
