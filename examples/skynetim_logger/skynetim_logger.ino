@@ -16,9 +16,6 @@
  * Arduino. If you don't know, grab the original 
  * http://arduino.cc/en/Main/ArduinoEthernetShield
  * 
- * Also requires the ArduinoJsonParser 
- * https://github.com/bblanchon/ArduinoJsonParser 
- * 
  * You will notice we're using F() in Serial.print which might be new to you
  * Its covered briefly on the arduino print page but it means we can store
  * our strings in flash, instead of in ram. 
