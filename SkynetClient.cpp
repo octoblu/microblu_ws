@@ -155,37 +155,34 @@ uint8_t SkynetClient::readLine(char *buf, uint8_t max)
 {
 	int count = 0;
 
-	while(count < max-1)
+	//end on newline, -1 from client, or -1 from client not available
+	char c = client->read();
+	while(c!=-1 && c!=10)
 	{
-		char c = client->read();
 		switch (c)
 		{
+			//dont store but get more chars
 			case 0:
 			case 13:
 				break;
-			case 10:
-			case -1:
-				buf[count++]=0;
-				DBGCN();
-				return count;
+			//if it fits, store it	
 			default:
+				if(count < max-1)
+				{
+					buf[count++]=c;
+				}else
+				{
+					DBGC("dumping: ");
+				}
 				DBGC(c);
-				buf[count++]=c;
 		}
-	}
-
-	//if we maxed buffer, clear incoming even if we lose something
-	if(count==max-1){
-		while(client->available())
-			client->read();
+		c = client->read();	
 	}
 	
 	buf[count++]=0;
 	DBGCN();
 	return count;
 }
-
-
 
 uint8_t SkynetClient::connected() {
   return bind;
