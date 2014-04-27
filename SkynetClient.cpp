@@ -173,6 +173,13 @@ uint8_t SkynetClient::readLine(char *buf, uint8_t max)
 				buf[count++]=c;
 		}
 	}
+
+	//if we maxed buffer, clear incoming even if we lose something
+	if(count==max-1){
+		while(client->available())
+			client->read();
+	}
+	
 	buf[count++]=0;
 	DBGCN();
 	return count;
@@ -659,7 +666,6 @@ void SkynetClient::sendMessage(const char *device, char const *object)
 void SkynetClient::logMessage(char const *object)
 {
 	char temp[UUIDSIZE];
-
 
 	DBGCS("Logging: ");
 
