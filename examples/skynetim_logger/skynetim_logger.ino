@@ -79,5 +79,5 @@ void loop() {
   //message to log MUST be comma seperated key value pair(s) and may
   //not be be an object or array
   skynetclient.logMessage("\"humidity\":123,\"temperature\":\"21C\"");
-  delay(10000);
+  delay(1000);
 }
