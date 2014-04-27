@@ -36,6 +36,109 @@ SkynetClient::SkynetClient(Client &_client){
 	this->client = &_client; 
 }
 
+int SkynetClient::connect(IPAddress ip, uint16_t port){
+	status = 0;
+	bind = 0;
+
+	DBGCSN("Connecting TCP");
+
+	//connect tcp or fail
+	if (!client->connect(ip, port))
+	{
+		client->stop();
+		DBGCSN("TCP Failed");
+		return false;
+	}
+
+	client->println(F("POST /socket.io/1/ HTTP/1.1"));
+	client->print(F("Host: "));
+	client->println(ip);
+	client->println(F("\r\n"));
+
+	//receive data or return
+	if(!waitSocketData())
+	{
+		client->stop();
+		DBGCSN("Post Failed");
+		return false;
+	}
+
+	//check for OK or return
+	if(readLine(databuffer, SOCKET_RX_BUFFER_SIZE) == 0 || strstr (databuffer,"200") == NULL){
+		client->stop();
+		DBGCSN("No Initial OK response");
+		return false;
+	}
+
+	//dump the response until the socketid line
+	for(int i = 0; i<7; i++){
+		if(readLine(databuffer, SOCKET_RX_BUFFER_SIZE)==0)
+		{
+			client->stop();
+			DBGCSN("Malformed POST response");
+			return false;
+		}
+	}
+		
+	//get the sid out of buffer
+	char sid[SID_MAXLEN+1];
+
+	int i = 0;
+
+	while((char)databuffer[i] != ':'){
+	   sid[i]=databuffer[i];
+	   i++;
+	}
+ 
+	sid[i++]=0;
+
+	DBGCS("SID: ");
+	DBGCN(sid);
+
+	//dump the remaining response
+	while(client->available())
+		client->read();
+
+	client->print(F("GET /socket.io/1/websocket/"));
+	client->print(sid);
+	client->println(F(" HTTP/1.1"));
+	client->print(F("Host: "));
+	client->println(ip);
+	client->println(F("Upgrade: WebSocket"));
+	client->println(F("Connection: Upgrade"));
+	client->println(F("\r\n"));
+
+	//receive data or return
+	if(!waitSocketData())
+	{
+		client->stop();
+		DBGCSN("GET Failed");
+		return false;
+	}
+	
+	//check for OK or return
+	if(readLine(databuffer, SOCKET_RX_BUFFER_SIZE) == 0 || strstr (databuffer,"101") == NULL)
+	{
+		DBGCSN("No Final OK response");
+		client->stop();
+		return false;
+	}
+
+	DBGCSN("Websocket Connected");
+
+	//dump the rest of the response
+	for(int i = 0; i<5; i++){
+		readLine(databuffer, SOCKET_RX_BUFFER_SIZE);
+	}
+
+	//monitor to initiate communications with skynet TODO some fail condition
+	while(!monitor());
+
+	//havent gotten a heartbeat yet so lets set current time
+	lastBeat = millis();
+
+	return status;}
+
 int SkynetClient::connect(const char* host, uint16_t port) 
 {
 	status = 0;
