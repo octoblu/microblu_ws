@@ -8,18 +8,18 @@
 ringbuffer txbuf(SKYNET_TX_BUFFER_SIZE);
 ringbuffer rxbuf(SKYNET_RX_BUFFER_SIZE);
 
-char LOG1[] PROGMEM = { "{\"name\":\"data\",\"args\":[{" } ;
-char LOG2[] PROGMEM = { ", \"uuid\":\"" } ;
+const char LOG1[] PROGMEM = { "{\"name\":\"data\",\"args\":[{" } ;
+const char LOG2[] PROGMEM = { ", \"uuid\":\"" } ;
 
-char IDENTIFY1[] PROGMEM = { "{\"name\":\"identity\",\"args\":[{\"socketid\":\"" } ;
-char IDENTIFY2[] PROGMEM = { "\", \"uuid\":\"" } ;
-char IDENTIFY3[] PROGMEM = { "\", \"token\":\"" } ;
-char CLOSE[] PROGMEM = { "\"}]}" } ;
+const char IDENTIFY1[] PROGMEM = { "{\"name\":\"identity\",\"args\":[{\"socketid\":\"" } ;
+const char IDENTIFY2[] PROGMEM = { "\", \"uuid\":\"" } ;
+const char IDENTIFY3[] PROGMEM = { "\", \"token\":\"" } ;
+const char CLOSE[] PROGMEM = { "\"}]}" } ;
 
-char BIND1[] PROGMEM = { "+[{\"result\":\"ok\"}]" } ;
+const char BIND1[] PROGMEM = { "+[{\"result\":\"ok\"}]" } ;
 
-char MESSAGE1[] PROGMEM = { "{\"name\":\"message\",\"args\":[{\"devices\":\"" } ;
-char MESSAGE2[] PROGMEM = { "\",\"payload\":\"" } ;
+const char MESSAGE1[] PROGMEM = { "{\"name\":\"message\",\"args\":[{\"devices\":\"" } ;
+const char MESSAGE2[] PROGMEM = { "\",\"payload\":\"" } ;
 
 #define IDENTIFY "identify"
 #define READY "ready"
