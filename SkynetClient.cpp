@@ -276,7 +276,7 @@ uint8_t SkynetClient::readLine(char *buf, uint8_t max)
 					buf[count++]=c;
 				}else
 				{
-					DBGC("dumping: ");
+					c = toupper(c);
 				}
 				DBGC(c);
 		}
