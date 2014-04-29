@@ -528,7 +528,7 @@ void SkynetClient::processSkynet(char *data, char *ack)
 
 	int r = jsmn_parse(&p, data, tok, MAX_PARSE_OBJECTS);
 	if (r != 0){
-	    DBGCSN("parse failed");
+	    DBGCS("parse failed");
 		DBGCN(r);
 		return;
 	}
