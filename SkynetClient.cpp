@@ -131,13 +131,14 @@ int SkynetClient::connect(IPAddress ip, uint16_t port){
 		readLine(databuffer, SOCKET_RX_BUFFER_SIZE);
 	}
 
-	//monitor to initiate communications with skynet TODO some fail condition
-	while(!monitor());
-
 	//havent gotten a heartbeat yet so lets set current time
 	lastBeat = millis();
 
-	return status;}
+	//monitor to initiate communications with skynet
+	while(!monitor() && (unsigned long)(millis() - lastBeat) <= SOCKETTIMEOUT);
+
+	return status;
+}
 
 int SkynetClient::connect(const char* host, uint16_t port) 
 {
@@ -235,11 +236,11 @@ int SkynetClient::connect(const char* host, uint16_t port)
 		readLine(databuffer, SOCKET_RX_BUFFER_SIZE);
 	}
 
-	//monitor to initiate communications with skynet TODO some fail condition
-	while(!monitor());
-
 	//havent gotten a heartbeat yet so lets set current time
 	lastBeat = millis();
+
+	//monitor to initiate communications with skynet
+	while(!monitor() && (unsigned long)(millis() - lastBeat) <= SOCKETTIMEOUT);
 
 	return status;
 }
