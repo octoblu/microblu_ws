@@ -51,6 +51,8 @@ int wifiStatus = WL_IDLE_STATUS;
 void setup()
 {
   Serial.begin(9600);
+
+  skynetclient.setMessageDelegate(onMessage);
 }
 
 void onMessage(const char * const data) {
