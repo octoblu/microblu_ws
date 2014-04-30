@@ -14,14 +14,12 @@
 	#ifdef PSTR
 		#define DBGCSN( ... ) Serial.println( F(__VA_ARGS__) )
 		#define DBGCS( ... ) Serial.print( F(__VA_ARGS__) )
-		#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
-		#define DBGC( ... ) Serial.print( __VA_ARGS__ )
 	#else
 		#define DBGCSN( ... ) Serial.println( __VA_ARGS__ )
 		#define DBGCS( ... ) Serial.print( __VA_ARGS__ )
-		#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
-		#define DBGC( ... ) Serial.print( __VA_ARGS__ )
 	#endif
+	#define DBGCN( ... ) Serial.println( __VA_ARGS__ )
+	#define DBGC( ... ) Serial.print( __VA_ARGS__ )
 #else
 	#define DBGCN( ... )
 	#define DBGC( ... )
@@ -35,7 +33,7 @@
 #define MAXACK 5
 
 #define HEARTBEATTIMEOUT 60000
-#define SOCKETTIMEOUT 10000UL
+#define SOCKETTIMEOUT 1000UL
 
 #define EEPROMBLOCKADDRESS 0
 #define EEPROMBLOCK 'S'

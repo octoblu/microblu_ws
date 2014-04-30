@@ -106,7 +106,7 @@ int SkynetClient::connect(IPAddress ip, uint16_t port){
 	client->println(ip);
 	client->println(F("Upgrade: WebSocket"));
 	client->println(F("Connection: Upgrade"));
-	client->println(F("\r\n"));
+	client->println(F(""));
 
 	//receive data or return
 	if(!waitSocketData())
@@ -211,7 +211,7 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	client->println(host);
 	client->println(F("Upgrade: WebSocket"));
 	client->println(F("Connection: Upgrade"));
-	client->println(F("\r\n"));
+	client->println(F(""));
 
 	//receive data or return
 	if(!waitSocketData())
