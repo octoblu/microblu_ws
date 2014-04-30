@@ -137,6 +137,11 @@ int SkynetClient::connect(IPAddress ip, uint16_t port){
 	//monitor to initiate communications with skynet
 	while(!monitor() && (unsigned long)(millis() - lastBeat) <= SOCKETTIMEOUT);
 
+	if(!status){
+		DBGCSN("Skynet handshake timeout");
+		client->stop();
+	}
+
 	return status;
 }
 
@@ -241,6 +246,11 @@ int SkynetClient::connect(const char* host, uint16_t port)
 
 	//monitor to initiate communications with skynet
 	while(!monitor() && (unsigned long)(millis() - lastBeat) <= SOCKETTIMEOUT);
+
+	if(!status){
+		DBGCSN("Skynet handshake timeout");
+		client->stop();
+	}
 
 	return status;
 }
