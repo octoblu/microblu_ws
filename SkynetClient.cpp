@@ -21,6 +21,13 @@ const char BIND1[] PROGMEM = { "+[{\"result\":\"ok\"}]" } ;
 const char MESSAGE1[] PROGMEM = { "{\"name\":\"message\",\"args\":[{\"devices\":\"" } ;
 const char MESSAGE2[] PROGMEM = { "\",\"payload\":\"" } ;
 
+const char GET1[] PROGMEM = { "GET /socket.io/1/websocket/" } ;
+const char GET2[] PROGMEM = { " HTTP/1.1\r\nHost: " } ;
+const char GET3[] PROGMEM = { "\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n\r\n" } ;
+
+const char POST1[] PROGMEM = { "POST /socket.io/1/ HTTP/1.1\r\nHost: " } ;
+const char POST2[] PROGMEM = { "\r\n\r\n" } ;
+
 #define IDENTIFY "identify"
 #define READY "ready"
 #define NOTREADY "notReady"
@@ -50,10 +57,14 @@ int SkynetClient::connect(IPAddress ip, uint16_t port){
 		return false;
 	}
 
-	client->println(F("POST /socket.io/1/ HTTP/1.1"));
-	client->print(F("Host: "));
-	client->println(ip);
-	client->println(F("\r\n"));
+	DBGC(POST1);
+	printByByteF(POST1);
+
+	DBGC(ip);
+	client->print(ip);
+
+	DBGC(POST2);
+	printByByteF(POST2);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -99,14 +110,20 @@ int SkynetClient::connect(IPAddress ip, uint16_t port){
 	while(client->available())
 		client->read();
 
-	client->print(F("GET /socket.io/1/websocket/"));
+	DBGC(GET1);
+	printByByteF(GET1);
+
+	DBGC(sid);
 	client->print(sid);
-	client->println(F(" HTTP/1.1"));
-	client->print(F("Host: "));
-	client->println(ip);
-	client->println(F("Upgrade: WebSocket"));
-	client->println(F("Connection: Upgrade"));
-	client->print(F("\r\n"));
+
+	DBGC(GET2);
+	printByByteF(GET2);
+
+	DBGC(ip);
+	client->print(ip);
+
+	DBGC(GET3);
+	printByByteF(GET3);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -160,10 +177,14 @@ int SkynetClient::connect(const char* host, uint16_t port)
 		return false;
 	}
 
-	client->println(F("POST /socket.io/1/ HTTP/1.1"));
-	client->print(F("Host: "));
-	client->println(host);
-	client->println(F("\r\n"));
+	DBGC(POST1);
+	printByByteF(POST1);
+
+	DBGC(host);
+	client->print(host);
+
+	DBGC(POST2);
+	printByByteF(POST2);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -209,14 +230,20 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	while(client->available())
 		client->read();
 
-	client->print(F("GET /socket.io/1/websocket/"));
+	DBGC(GET1);
+	printByByteF(GET1);
+
+	DBGC(sid);
 	client->print(sid);
-	client->println(F(" HTTP/1.1"));
-	client->print(F("Host: "));
-	client->println(host);
-	client->println(F("Upgrade: WebSocket"));
-	client->println(F("Connection: Upgrade"));
-	client->print(F("\r\n"));
+
+	DBGC(GET2);
+	printByByteF(GET2);
+
+	DBGC(host);
+	client->print(host);
+
+	DBGC(GET3);
+	printByByteF(GET3);
 
 	//receive data or return
 	if(!waitSocketData())

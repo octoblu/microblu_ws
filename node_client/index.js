@@ -4,7 +4,9 @@ var firmata = require('firmata');
 
 // CHANGE THIS value !
 // it needs to be the uuid of the device you want to send commands to:
-var sendId = 'f5f3e920-c5a7-11e3-8ee5-3511496cbd23';
+//var sendId = 'b24aae61-d01b-11e3-87ba-8d85221abcb2';
+
+var sendId = '9a2240b1-d01a-11e3-87ba-8d85221abcb2';
 
 var firm;
 var pinState = 1;
@@ -15,7 +17,7 @@ function togglePin(){
   }else{
     pinState = 1;
   }
-  firm.digitalWrite(6, pinState);
+  firm.digitalWrite(7, pinState);
   setTimeout(togglePin, 650);
 }
 
