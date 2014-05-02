@@ -2,7 +2,6 @@
 #define _SKYNETCLIENT_H
 
 #include "Arduino.h"
-#include "SPI.h"
 #include "Client.h"
 #include <EEPROM.h>
 #include "utility/ringbuffer.h"
