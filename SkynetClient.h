@@ -85,10 +85,11 @@ class SkynetClient : public Stream {
 		unsigned long lastBeat;
         MessageDelegate messageDelegate;
 
-		void printByByteF(PGM_P data);
-		void printByByte(const char *data);
-		void printByByte(const char *data, size_t size);
-		void printToken(const char *js, jsmntok_t t);
+		void xmitF(PGM_P data);
+		void xmit(const char *data);
+		void xmit(char data);
+		void xmitToken(const char *js, jsmntok_t t);
+		void xmit(IPAddress data);
 
 		uint8_t waitSocketData();
 		uint8_t readLine(char *buf, uint8_t max);

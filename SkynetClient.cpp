@@ -8,25 +8,25 @@
 ringbuffer txbuf(SKYNET_TX_BUFFER_SIZE);
 ringbuffer rxbuf(SKYNET_RX_BUFFER_SIZE);
 
-const char LOG1[] PROGMEM = { "{\"name\":\"data\",\"args\":[{" } ;
-const char LOG2[] PROGMEM = { ", \"uuid\":\"" } ;
+const char FLOG1[] PROGMEM = { "{\"name\":\"data\",\"args\":[{" } ;
+const char FLOG2[] PROGMEM = { ", \"uuid\":\"" } ;
 
-const char IDENTIFY1[] PROGMEM = { "{\"name\":\"identity\",\"args\":[{\"socketid\":\"" } ;
-const char IDENTIFY2[] PROGMEM = { "\", \"uuid\":\"" } ;
-const char IDENTIFY3[] PROGMEM = { "\", \"token\":\"" } ;
-const char CLOSE[] PROGMEM = { "\"}]}" } ;
+const char FIDENTIFY1[] PROGMEM = { "{\"name\":\"identity\",\"args\":[{\"socketid\":\"" } ;
+const char FIDENTIFY2[] PROGMEM = { "\", \"uuid\":\"" } ;
+const char FIDENTIFY3[] PROGMEM = { "\", \"token\":\"" } ;
+const char FCLOSE[] PROGMEM = { "\"}]}" } ;
 
-const char BIND1[] PROGMEM = { "+[{\"result\":\"ok\"}]" } ;
+const char FBIND1[] PROGMEM = { "+[{\"result\":\"ok\"}]" } ;
 
-const char MESSAGE1[] PROGMEM = { "{\"name\":\"message\",\"args\":[{\"devices\":\"" } ;
-const char MESSAGE2[] PROGMEM = { "\",\"payload\":\"" } ;
+const char FMESSAGE1[] PROGMEM = { "{\"name\":\"message\",\"args\":[{\"devices\":\"" } ;
+const char FMESSAGE2[] PROGMEM = { "\",\"payload\":\"" } ;
 
-const char GET1[] PROGMEM = { "GET /socket.io/1/websocket/" } ;
-const char GET2[] PROGMEM = { " HTTP/1.1\r\nHost: " } ;
-const char GET3[] PROGMEM = { "\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n\r\n" } ;
+const char FGET1[] PROGMEM = { "GET /socket.io/1/websocket/" } ;
+const char FGET2[] PROGMEM = { " HTTP/1.1\r\nHost: " } ;
+const char FGET3[] PROGMEM = { "\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n\r\n" } ;
 
-const char POST1[] PROGMEM = { "POST /socket.io/1/ HTTP/1.1\r\nHost: " } ;
-const char POST2[] PROGMEM = { "\r\n\r\n" } ;
+const char FPOST1[] PROGMEM = { "POST /socket.io/1/ HTTP/1.1\r\nHost: " } ;
+const char FPOST2[] PROGMEM = { "\r\n\r\n" } ;
 
 #define IDENTIFY "identify"
 #define READY "ready"
@@ -37,7 +37,7 @@ const char POST2[] PROGMEM = { "\r\n\r\n" } ;
 #define EMIT "5:::"
 #define MSG "3:::"
 #define HEARTBEAT "2::"
-
+#define BND "6:::"
 
 SkynetClient::SkynetClient(Client &_client){
 	this->client = &_client; 
@@ -57,14 +57,9 @@ int SkynetClient::connect(IPAddress ip, uint16_t port){
 		return false;
 	}
 
-	DBGC(POST1);
-	printByByteF(POST1);
-
-	DBGC(ip);
-	client->print(ip);
-
-	DBGC(POST2);
-	printByByteF(POST2);
+	xmitF(FPOST1);
+	xmit(ip);
+	xmitF(FPOST2);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -110,20 +105,11 @@ int SkynetClient::connect(IPAddress ip, uint16_t port){
 	while(client->available())
 		client->read();
 
-	DBGC(GET1);
-	printByByteF(GET1);
-
-	DBGC(sid);
-	client->print(sid);
-
-	DBGC(GET2);
-	printByByteF(GET2);
-
-	DBGC(ip);
-	client->print(ip);
-
-	DBGC(GET3);
-	printByByteF(GET3);
+	xmitF(FGET1);
+	xmit(sid);
+	xmitF(FGET2);
+	xmit(ip);
+	xmitF(FGET3);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -177,14 +163,9 @@ int SkynetClient::connect(const char* host, uint16_t port)
 		return false;
 	}
 
-	DBGC(POST1);
-	printByByteF(POST1);
-
-	DBGC(host);
-	client->print(host);
-
-	DBGC(POST2);
-	printByByteF(POST2);
+	xmitF(FPOST1);
+	xmit(host);
+	xmitF(FPOST2);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -230,20 +211,11 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	while(client->available())
 		client->read();
 
-	DBGC(GET1);
-	printByByteF(GET1);
-
-	DBGC(sid);
-	client->print(sid);
-
-	DBGC(GET2);
-	printByByteF(GET2);
-
-	DBGC(host);
-	client->print(host);
-
-	DBGC(GET3);
-	printByByteF(GET3);
+	xmitF(FGET1);
+	xmit(sid);
+	xmitF(FGET2);
+	xmit(host);
+	xmitF(FGET3);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -298,7 +270,7 @@ uint8_t SkynetClient::readLine(char *buf, uint8_t max)
 
 	//end on newline, -1 from client, or -1 from client not available
 	char c = client->read();
-	while(c!=-1 && c!=10)
+	while(c!=-1 && c!=10 && c!=255)
 	{
 		switch (c)
 		{
@@ -407,9 +379,9 @@ int SkynetClient::monitor()
 				DBGCS("Heartbeat at: ");
 				lastBeat = millis();
 				DBGCN(lastBeat);
-				client->print((char)0);
-				client->print(F("2::"));
-				client->print((char)255);
+				xmit((char)0);
+				xmit(HEARTBEAT);
+				xmit((char)255);
 				break;
 
 		    //huh?
@@ -429,31 +401,26 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 
     DBGCS("Sending: ");
 
-    DBGC((char)0);
-	client->print((char)0);
-
-    DBGC(EMIT);	
-	client->print(EMIT);
-
-	printByByteF(IDENTIFY1);
-	printToken(data, tok[7]);
+	xmit((char)0);
+	xmit(EMIT);
+	xmitF(FIDENTIFY1);
+	xmitToken(data, tok[7]);
 	
 	if( EEPROM.read( (uint8_t)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
 	{
 		getUuid(temp);
 
-		printByByteF(IDENTIFY2);
-		printByByte(temp);
+		xmitF(FIDENTIFY2);
+		xmit(temp);
 
 		getToken(temp);
 
-		printByByteF(IDENTIFY3);
-		printByByte(temp);
+		xmitF(FIDENTIFY3);
+		xmit(temp);
 	}
-	printByByteF(CLOSE);
-  
-	DBGCN((char)255);
-	client->print((char)255);
+
+	xmitF(FCLOSE);
+	xmit((char)255);
 }
 
 //Got credentials back, store if necessary
@@ -506,41 +473,25 @@ void SkynetClient::processNotReady(char *data, jsmntok_t *tok)
 {
     DBGCS("Sending: ");
 
-    DBGC((char)0);
-	client->print((char)0);
-
-    DBGC(EMIT);	
-	client->print(EMIT);
-
-	printByByteF(IDENTIFY1);
-	printToken(data, tok[11]);
-	printByByteF(CLOSE);
-  
-	DBGCN((char)255);
-	client->print((char)255);
+	xmit((char)0);
+	xmit(EMIT);
+	xmitF(FIDENTIFY1);
+	xmitToken(data, tok[11]);
+	xmitF(FCLOSE);
+	xmit((char)255);
 }
 
 void SkynetClient::processBind(char *data, jsmntok_t *tok, char *ack)
 {
 	bind = 1;
 
-	DBGCN(BIND);
+    DBGCS("Sending Bind: ");
 
-    DBGCS("Sending: ");
-
-    DBGC((char)0);
-	client->print((char)0);
-
-    DBGCS("6:::");
-	client->print(F("6:::"));
-
-	DBGC(ack);
-	client->print(ack);
-
-	printByByteF(BIND1);
-  
-	DBGCN((char)255);
-	client->print((char)255);
+	xmit((char)0);
+	xmit(BND);
+	xmit(ack);
+	xmitF(FBIND1);
+	xmit((char)255);
 }
 
 void SkynetClient::processMessage(char *data, jsmntok_t *tok)
@@ -601,44 +552,33 @@ void SkynetClient::processSkynet(char *data, char *ack)
     }
 }
 
-//wifi client->print has a buffer that so far we've been unable to locate
-//under 154 (our identify size) for sure.. so sending char by char for now
-void SkynetClient::printByByte(const char *data, size_t size) {
-	if(data != NULL && data[0] != '\0')
-	{
-		int i = 0;
-		while ( i < size)
-		{
-		    DBGC(data[i]);
-			client->print(data[i++]);
-		}
-	}
-}
-
-//wifi client->print has a buffer that so far we've been unable to locate
-//under 154 (our identify size) for sure.. so sending char by char for now
-void SkynetClient::printByByteF(PGM_P data) 
+void SkynetClient::xmitF(PGM_P data) 
 {
 	char buffer[MAX_FLASH_STRING];
 	strcpy_P(buffer, data);
-	printByByte(buffer);
+	DBGC(buffer);
+	client->print(buffer);
 }
 
-//wifi client->print has a buffer that so far we've been unable to locate
-//under 154 (our identify size) for sure.. so sending char by char for now
-void SkynetClient::printByByte(const char *data) {
-	if(data != NULL)
-	{
-		int i = 0;
-		while ( data[i] != '\0' )
-		{
-		    DBGC(data[i]);
-			client->print(data[i++]);
-		}
-	}
+void SkynetClient::xmit(IPAddress data) 
+{
+	DBGC(data);
+	client->print(data);
 }
 
-void SkynetClient::printToken(const char *js, jsmntok_t t) 
+void SkynetClient::xmit(const char *data) 
+{
+	DBGC(data);
+	client->print(data);
+}
+
+void SkynetClient::xmit(char data)
+{
+	DBGC(data);
+	client->print(data);
+}
+
+void SkynetClient::xmitToken(const char *js, jsmntok_t t) 
 {
 	int i = 0;
 	for(i = t.start; i < t.end; i++) {
@@ -650,16 +590,13 @@ void SkynetClient::printToken(const char *js, jsmntok_t t)
 size_t SkynetClient::write(const uint8_t *buf, size_t size) {
     DBGCS("Sending2: ");
 
-    DBGC((char)0);
-	client->print((char)0);
+	xmit((char)0);
 
-    DBGC(MSG);	
-	client->print(MSG);
+	xmit(MSG);
 	
 	//b64::send(buf, size, client);
 
-    DBGCN((char)255);
-	client->print((char)255);
+	xmit((char)255);
 
 	return size;
 }
@@ -689,16 +626,14 @@ void SkynetClient::flush()
 	if(txbuf.available()){
 		DBGCS("Sending: ");
 	
-	    DBGC((char)0);
-		client->print((char)0);
+		xmit((char)0);
 	
-	    DBGC(MSG);	
-		client->print(MSG);
+		xmit(MSG);
 
+		DBGCS("--BUFFER--");
 		b64::send(txbuf, *client);
 		
-		DBGCN((char)255);
-		client->print((char)255);
+		xmit((char)255);
 	}
 }
 
@@ -785,20 +720,14 @@ void SkynetClient::sendMessage(const char *device, char const *object)
 {
 	DBGCS("Sending: ");
 
-    DBGC((char)0);
-	client->print((char)0);
-
-    DBGC(EMIT);	
-	client->print(EMIT);
-
-	printByByteF(MESSAGE1);
-	printByByte(device);
-	printByByteF(MESSAGE2);
-	printByByte(object);
-	printByByteF(CLOSE);
-
-	DBGCN((char)255);
-	client->print((char)255);
+	xmit((char)0);
+	xmit(EMIT);
+	xmitF(FMESSAGE1);
+	xmit(device);
+	xmitF(FMESSAGE2);
+	xmit(object);
+	xmitF(FCLOSE);
+	xmit((char)255);
 }
 
 void SkynetClient::logMessage(char const *object)
@@ -807,26 +736,20 @@ void SkynetClient::logMessage(char const *object)
 
 	DBGCS("Logging: ");
 
-    DBGC((char)0);
-	client->print((char)0);
+	xmit((char)0);
+	xmit(EMIT);
+	xmitF(FLOG1);
+	xmit(object);
+	xmitF(FLOG2);
 
-    DBGC(EMIT);	
-	client->print(EMIT);
-
-	printByByteF(LOG1);
-
-	printByByte(object);
-
-	printByByteF(LOG2);
 	getUuid(temp);
-	printByByte(temp);
 
-	printByByteF(IDENTIFY3);
+	xmit(temp);
+	xmitF(FIDENTIFY3);
+	
 	getToken(temp);
-	printByByte(temp);
-
-	printByByteF(CLOSE);
-
-	DBGCN((char)255);
-	client->print((char)255);
+	
+	xmit(temp);
+	xmitF(FCLOSE);
+	xmit((char)255);
 }
