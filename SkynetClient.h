@@ -46,7 +46,7 @@
 // Length of static data buffers
 #define SOCKET_RX_BUFFER_SIZE 186 //186 needed for biggest skynet message, READY
 #define SKYNET_TX_BUFFER_SIZE 150 //~150 is needed for firmata's capability query on an uno
-#define SKYNET_RX_BUFFER_SIZE 32
+#define SKYNET_RX_BUFFER_SIZE 64
 
 class SkynetClient : public Stream {
 	public:
