@@ -47,6 +47,37 @@
 #define SKYNET_TX_BUFFER_SIZE 150 //~150 is needed for firmata's capability query on an uno
 #define SKYNET_RX_BUFFER_SIZE 64
 
+#define FLOG1 F("{\"name\":\"data\",\"args\":[{")
+#define FLOG2 F(", \"uuid\":\"")
+
+#define FIDENTIFY1 F("{\"name\":\"identity\",\"args\":[{\"socketid\":\"")
+#define FIDENTIFY2 F("\", \"uuid\":\"")
+#define FIDENTIFY3 F("\", \"token\":\"")
+#define FCLOSE F("\"}]}")
+
+#define FBIND1 F("+[{\"result\":\"ok\"}]")
+
+#define FMESSAGE1 F("{\"name\":\"message\",\"args\":[{\"devices\":\"")
+#define FMESSAGE2 F("\",\"payload\":\"")
+
+#define FGET1 F("GET /socket.io/1/websocket/")
+#define FGET2 F(" HTTP/1.1\r\nHost: ")
+#define FGET3 F("\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n\r\n")
+
+#define FPOST1 F("POST /socket.io/1/ HTTP/1.1\r\nHost: ")
+#define FPOST2 F("\r\n\r\n")
+
+#define IDENTIFY "identify"
+#define READY "ready"
+#define NOTREADY "notReady"
+#define BIND "bindSocket"
+#define MESSAGE "message"
+
+#define EMIT "5:::"
+#define MSG "3:::"
+#define HEARTBEAT "2::"
+#define BND "6:::"
+
 class SkynetClient : public Stream {
 	public:
 		SkynetClient(Client &_client);
@@ -85,7 +116,7 @@ class SkynetClient : public Stream {
 		unsigned long lastBeat;
         MessageDelegate messageDelegate;
 
-		void xmitF(PGM_P data);
+		void xmit(const __FlashStringHelper* data);
 		void xmit(const char *data);
 		void xmit(char data);
 		void xmitToken(const char *js, jsmntok_t t);

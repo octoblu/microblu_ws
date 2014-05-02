@@ -8,37 +8,6 @@
 ringbuffer txbuf(SKYNET_TX_BUFFER_SIZE);
 ringbuffer rxbuf(SKYNET_RX_BUFFER_SIZE);
 
-const char FLOG1[] PROGMEM = { "{\"name\":\"data\",\"args\":[{" } ;
-const char FLOG2[] PROGMEM = { ", \"uuid\":\"" } ;
-
-const char FIDENTIFY1[] PROGMEM = { "{\"name\":\"identity\",\"args\":[{\"socketid\":\"" } ;
-const char FIDENTIFY2[] PROGMEM = { "\", \"uuid\":\"" } ;
-const char FIDENTIFY3[] PROGMEM = { "\", \"token\":\"" } ;
-const char FCLOSE[] PROGMEM = { "\"}]}" } ;
-
-const char FBIND1[] PROGMEM = { "+[{\"result\":\"ok\"}]" } ;
-
-const char FMESSAGE1[] PROGMEM = { "{\"name\":\"message\",\"args\":[{\"devices\":\"" } ;
-const char FMESSAGE2[] PROGMEM = { "\",\"payload\":\"" } ;
-
-const char FGET1[] PROGMEM = { "GET /socket.io/1/websocket/" } ;
-const char FGET2[] PROGMEM = { " HTTP/1.1\r\nHost: " } ;
-const char FGET3[] PROGMEM = { "\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n\r\n" } ;
-
-const char FPOST1[] PROGMEM = { "POST /socket.io/1/ HTTP/1.1\r\nHost: " } ;
-const char FPOST2[] PROGMEM = { "\r\n\r\n" } ;
-
-#define IDENTIFY "identify"
-#define READY "ready"
-#define NOTREADY "notReady"
-#define BIND "bindSocket"
-#define MESSAGE "message"
-
-#define EMIT "5:::"
-#define MSG "3:::"
-#define HEARTBEAT "2::"
-#define BND "6:::"
-
 SkynetClient::SkynetClient(Client &_client){
 	this->client = &_client; 
 }
@@ -57,9 +26,9 @@ int SkynetClient::connect(IPAddress ip, uint16_t port){
 		return false;
 	}
 
-	xmitF(FPOST1);
+	xmit(FPOST1);
 	xmit(ip);
-	xmitF(FPOST2);
+	xmit(FPOST2);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -105,11 +74,11 @@ int SkynetClient::connect(IPAddress ip, uint16_t port){
 	while(client->available())
 		client->read();
 
-	xmitF(FGET1);
+	xmit(FGET1);
 	xmit(sid);
-	xmitF(FGET2);
+	xmit(FGET2);
 	xmit(ip);
-	xmitF(FGET3);
+	xmit(FGET3);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -163,9 +132,9 @@ int SkynetClient::connect(const char* host, uint16_t port)
 		return false;
 	}
 
-	xmitF(FPOST1);
+	xmit(FPOST1);
 	xmit(host);
-	xmitF(FPOST2);
+	xmit(FPOST2);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -211,11 +180,11 @@ int SkynetClient::connect(const char* host, uint16_t port)
 	while(client->available())
 		client->read();
 
-	xmitF(FGET1);
+	xmit(FGET1);
 	xmit(sid);
-	xmitF(FGET2);
+	xmit(FGET2);
 	xmit(host);
-	xmitF(FGET3);
+	xmit(FGET3);
 
 	//receive data or return
 	if(!waitSocketData())
@@ -403,23 +372,23 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 
 	xmit((char)0);
 	xmit(EMIT);
-	xmitF(FIDENTIFY1);
+	xmit(FIDENTIFY1);
 	xmitToken(data, tok[7]);
 	
 	if( EEPROM.read( (uint8_t)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
 	{
 		getUuid(temp);
 
-		xmitF(FIDENTIFY2);
+		xmit(FIDENTIFY2);
 		xmit(temp);
 
 		getToken(temp);
 
-		xmitF(FIDENTIFY3);
+		xmit(FIDENTIFY3);
 		xmit(temp);
 	}
 
-	xmitF(FCLOSE);
+	xmit(FCLOSE);
 	xmit((char)255);
 }
 
@@ -475,9 +444,9 @@ void SkynetClient::processNotReady(char *data, jsmntok_t *tok)
 
 	xmit((char)0);
 	xmit(EMIT);
-	xmitF(FIDENTIFY1);
+	xmit(FIDENTIFY1);
 	xmitToken(data, tok[11]);
-	xmitF(FCLOSE);
+	xmit(FCLOSE);
 	xmit((char)255);
 }
 
@@ -490,7 +459,7 @@ void SkynetClient::processBind(char *data, jsmntok_t *tok, char *ack)
 	xmit((char)0);
 	xmit(BND);
 	xmit(ack);
-	xmitF(FBIND1);
+	xmit(FBIND1);
 	xmit((char)255);
 }
 
@@ -552,10 +521,13 @@ void SkynetClient::processSkynet(char *data, char *ack)
     }
 }
 
-void SkynetClient::xmitF(PGM_P data) 
+void SkynetClient::xmit(const __FlashStringHelper* data) 
 {
+	PGM_P p = reinterpret_cast<PGM_P>(data);
+
 	char buffer[MAX_FLASH_STRING];
-	strcpy_P(buffer, data);
+	strcpy_P(buffer, p);
+
 	DBGC(buffer);
 	client->print(buffer);
 }
@@ -722,11 +694,11 @@ void SkynetClient::sendMessage(const char *device, char const *object)
 
 	xmit((char)0);
 	xmit(EMIT);
-	xmitF(FMESSAGE1);
+	xmit(FMESSAGE1);
 	xmit(device);
-	xmitF(FMESSAGE2);
+	xmit(FMESSAGE2);
 	xmit(object);
-	xmitF(FCLOSE);
+	xmit(FCLOSE);
 	xmit((char)255);
 }
 
@@ -738,18 +710,18 @@ void SkynetClient::logMessage(char const *object)
 
 	xmit((char)0);
 	xmit(EMIT);
-	xmitF(FLOG1);
+	xmit(FLOG1);
 	xmit(object);
-	xmitF(FLOG2);
+	xmit(FLOG2);
 
 	getUuid(temp);
 
 	xmit(temp);
-	xmitF(FIDENTIFY3);
+	xmit(FIDENTIFY3);
 	
 	getToken(temp);
 	
 	xmit(temp);
-	xmitF(FCLOSE);
+	xmit(FCLOSE);
 	xmit((char)255);
 }
