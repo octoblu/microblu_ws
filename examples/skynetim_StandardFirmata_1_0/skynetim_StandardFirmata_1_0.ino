@@ -1,3 +1,36 @@
+/* 
+ *                SSSSS  kk                            tt    
+ *               SS      kk  kk yy   yy nn nnn    eee  tt    
+ *                SSSSS  kkkkk  yy   yy nnn  nn ee   e tttt  
+ *                    SS kk kk   yyyyyy nn   nn eeeee  tt    
+ *                SSSSS  kk  kk      yy nn   nn  eeeee  tttt 
+ *                               yyyyy                         
+ * 
+ * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR 
+ * THE INTERNET OF THINGS.
+ * 
+ * This sketch is for Arduino 1.0 and waits for firmata commands via Skynet. 
+ * For a node example to communicate with the Arduino, see 
+ * https://www.npmjs.org/package/skynet-serial
+ *
+ * Main changes from Standard Firmata were:
+ * Pass the SkynetClient object to Firmata.begin() instead of baud rate or 
+ * Serial object.
+ *
+ * Make sure systemResetCallback doesnt mess with the ethernet's unavailable pins. 
+ * If you mess with them remotely beyond that, its on you. (10,11,12 and 13)
+ *
+ * Works with ethernet shields compatible with EthernetClient library from
+ * Arduino. If you don't know, grab the original 
+ * http://arduino.cc/en/Main/ArduinoEthernetShield
+ * 
+ * Also requires the ArduinoJsonParser 
+ * https://github.com/bblanchon/ArduinoJsonParser 
+ * 
+ * You can turn on debugging within SkynetClient.h by uncommenting 
+ * #define SKYNETCLIENT_DEBUG
+ */
+
 /*
  * Firmata is a generic protocol for communicating with microcontrollers
  * from software on a host computer. It is intended to work with
@@ -114,11 +147,7 @@ void readAndReportData(byte address, int theRegister, byte numBytes) {
     Wire.send((byte)theRegister);
     #endif
     Wire.endTransmission();
-    // do not set a value of 0
-    if (i2cReadDelayTime > 0) {
-      // delay is necessary for some devices such as WiiNunchuck
-      delayMicroseconds(i2cReadDelayTime);
-    }
+    delayMicroseconds(i2cReadDelayTime);  // delay is necessary for some devices such as WiiNunchuck
   } else {
     theRegister = 0;  // fill the register with a dummy value
   }
@@ -398,7 +427,7 @@ void sysexCallback(byte command, byte argc, byte *argv)
       query[queryIndex].bytes = argv[4] + (argv[5] << 7);
       break;
     case I2C_STOP_READING:
-    byte queryIndexToSkip;      
+	  byte queryIndexToSkip;      
       // if read continuous mode is enabled for only 1 i2c device, disable
       // read continuous reporting for that device
       if (queryIndex <= 0) {
@@ -474,57 +503,57 @@ void sysexCallback(byte command, byte argc, byte *argv)
     }
     break;
   case CAPABILITY_QUERY:
-    Firmata.write(START_SYSEX);
-    Firmata.write(CAPABILITY_RESPONSE);
+    Serial.write(START_SYSEX);
+    Serial.write(CAPABILITY_RESPONSE);
     for (byte pin=0; pin < TOTAL_PINS; pin++) {
       if (IS_PIN_DIGITAL(pin)) {
-        Firmata.write((byte)INPUT);
-        Firmata.write(1);
-        Firmata.write((byte)OUTPUT);
-        Firmata.write(1);
+        Serial.write((byte)INPUT);
+        Serial.write(1);
+        Serial.write((byte)OUTPUT);
+        Serial.write(1);
       }
       if (IS_PIN_ANALOG(pin)) {
-        Firmata.write(ANALOG);
-        Firmata.write(10);
+        Serial.write(ANALOG);
+        Serial.write(10);
       }
       if (IS_PIN_PWM(pin)) {
-        Firmata.write(PWM);
-        Firmata.write(8);
+        Serial.write(PWM);
+        Serial.write(8);
       }
       if (IS_PIN_SERVO(pin)) {
-        Firmata.write(SERVO);
-        Firmata.write(14);
+        Serial.write(SERVO);
+        Serial.write(14);
       }
       if (IS_PIN_I2C(pin)) {
-        Firmata.write(I2C);
-        Firmata.write(1);  // to do: determine appropriate value 
+        Serial.write(I2C);
+        Serial.write(1);  // to do: determine appropriate value 
       }
-      Firmata.write(127);
+      Serial.write(127);
     }
-    Firmata.write(END_SYSEX);
+    Serial.write(END_SYSEX);
     break;
   case PIN_STATE_QUERY:
     if (argc > 0) {
       byte pin=argv[0];
-      Firmata.write(START_SYSEX);
-      Firmata.write(PIN_STATE_RESPONSE);
-      Firmata.write(pin);
+      Serial.write(START_SYSEX);
+      Serial.write(PIN_STATE_RESPONSE);
+      Serial.write(pin);
       if (pin < TOTAL_PINS) {
-        Firmata.write((byte)pinConfig[pin]);
-  Firmata.write((byte)pinState[pin] & 0x7F);
-  if (pinState[pin] & 0xFF80) Firmata.write((byte)(pinState[pin] >> 7) & 0x7F);
-  if (pinState[pin] & 0xC000) Firmata.write((byte)(pinState[pin] >> 14) & 0x7F);
+        Serial.write((byte)pinConfig[pin]);
+	Serial.write((byte)pinState[pin] & 0x7F);
+	if (pinState[pin] & 0xFF80) Serial.write((byte)(pinState[pin] >> 7) & 0x7F);
+	if (pinState[pin] & 0xC000) Serial.write((byte)(pinState[pin] >> 14) & 0x7F);
       }
-      Firmata.write(END_SYSEX);
+      Serial.write(END_SYSEX);
     }
     break;
   case ANALOG_MAPPING_QUERY:
-    Firmata.write(START_SYSEX);
-    Firmata.write(ANALOG_MAPPING_RESPONSE);
+    Serial.write(START_SYSEX);
+    Serial.write(ANALOG_MAPPING_RESPONSE);
     for (byte pin=0; pin < TOTAL_PINS; pin++) {
-      Firmata.write(IS_PIN_ANALOG(pin) ? PIN_TO_ANALOG(pin) : 127);
+      Serial.write(IS_PIN_ANALOG(pin) ? PIN_TO_ANALOG(pin) : 127);
     }
-    Firmata.write(END_SYSEX);
+    Serial.write(END_SYSEX);
     break;
   }
 }
@@ -565,11 +594,11 @@ void systemResetCallback()
   // initialize a defalt state
   // TODO: option to load config from EEPROM instead of default
   if (isI2CEnabled) {
-    disableI2CPins();
+  	disableI2CPins();
   }
   for (byte i=0; i < TOTAL_PORTS; i++) {
     reportPINs[i] = false;      // by default, reporting off
-    portConfigInputs[i] = 0;  // until activated
+    portConfigInputs[i] = 0;	// until activated
     previousPINs[i] = 0;
   }
   // pins with analog capability default to analog input
@@ -577,7 +606,7 @@ void systemResetCallback()
   for (byte i=0; i < TOTAL_PINS; i++) {
     
     // skip SPI pins for Ethernet/Wifi Shield
-    if ( (i==7) || (i==MOSI) || (i==MISO) || (i==SCK) || (i==SS) )
+    if ( (i==MOSI) || (i==MISO) || (i==SCK) || (i==SS) )
       continue;
       
     if (IS_PIN_ANALOG(i)) {
@@ -613,7 +642,7 @@ void setup()
     for(;;)
       ;
   }
-
+  
   Firmata.setFirmwareVersion(FIRMATA_MAJOR_VERSION, FIRMATA_MINOR_VERSION);
 
   Firmata.attach(ANALOG_MESSAGE, analogWriteCallback);

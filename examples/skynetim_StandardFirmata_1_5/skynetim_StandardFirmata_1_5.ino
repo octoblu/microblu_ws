@@ -1,3 +1,36 @@
+/* 
+ *                SSSSS  kk                            tt    
+ *               SS      kk  kk yy   yy nn nnn    eee  tt    
+ *                SSSSS  kkkkk  yy   yy nnn  nn ee   e tttt  
+ *                    SS kk kk   yyyyyy nn   nn eeeee  tt    
+ *                SSSSS  kk  kk      yy nn   nn  eeeee  tttt 
+ *                               yyyyy                         
+ * 
+ * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR 
+ * THE INTERNET OF THINGS.
+ * 
+ * This sketch is for Arduino 1.5 and waits for firmata commands via Skynet. 
+ * For a node example to communicate with the Arduino, see 
+ * https://www.npmjs.org/package/skynet-serial
+*
+ * Main changes from Standard Firmata were:
+ * Pass the SkynetClient object to Firmata.begin() instead of baud rate or 
+ * Serial object.
+ *
+ * Make sure systemResetCallback doesnt mess with the ethernet's unavailable pins. 
+ * If you mess with them remotely beyond that, its on you. (10,11,12 and 13)
+ *
+ * Works with ethernet shields compatible with EthernetClient library from
+ * Arduino. If you don't know, grab the original 
+ * http://arduino.cc/en/Main/ArduinoEthernetShield
+ * 
+ * Also requires the ArduinoJsonParser 
+ * https://github.com/bblanchon/ArduinoJsonParser 
+ * 
+ * You can turn on debugging within SkynetClient.h by uncommenting 
+ * #define SKYNETCLIENT_DEBUG
+ */
+
 /*
  * Firmata is a generic protocol for communicating with microcontrollers
  * from software on a host computer. It is intended to work with
@@ -33,24 +66,20 @@
 #include <Wire.h>
 #include <Firmata.h>
 #include <EEPROM.h>
-#include <WiFi.h>
+#include "Ethernet.h"
 #include "SPI.h"
 #include "SkynetClient.h"
 #include <JsonParser.h>
 
-WiFiClient client;
+EthernetClient client;
 
 SkynetClient skynetclient(client);
 
-char ssid[] = "yournetworkname";      //  your network SSID (name)
-char pass[] = "yourpassword";         // your WPA network password
-// char key[] = "D0D0DEADF00DABBADEAFBEADED";       // your WEP network key
-// int keyIndex = 0;                                // your WEP network key Index number
+//you can't have 2 of the same mac on your network!
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 char hostname[] = "skynet.im";
 int port = 80;
-
-int wifiStatus = WL_IDLE_STATUS;
 
 // move the following defines to Firmata.h?
 #define I2C_WRITE B00000000
@@ -581,7 +610,7 @@ void systemResetCallback()
   for (byte i=0; i < TOTAL_PINS; i++) {
     
     // skip SPI pins for Ethernet/Wifi Shield
-    if ( (i==7) || (i==MOSI) || (i==MISO) || (i==SCK) || (i==SS) )
+    if ( (i==MOSI) || (i==MISO) || (i==SCK) || (i==SS) )
       continue;
       
     if (IS_PIN_ANALOG(i)) {
@@ -610,6 +639,14 @@ void setup()
 {
   Serial.begin(9600);
 
+  // start the Ethernet connection:
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println(F("Failed to configure Ethernet using DHCP"));
+    // no point in carrying on, so do nothing forevermore:
+    for(;;)
+      ;
+  }
+
   Firmata.setFirmwareVersion(FIRMATA_MAJOR_VERSION, FIRMATA_MINOR_VERSION);
 
   Firmata.attach(ANALOG_MESSAGE, analogWriteCallback);
@@ -629,17 +666,8 @@ void setup()
  *============================================================================*/
 void loop() 
 {
-  while (wifiStatus != WL_CONNECTED) 
-  {
-    Serial.print(F("Attempting to connect to WPA SSID: "));
-    Serial.println(ssid);
-
-    wifiStatus = WiFi.begin(ssid, pass); //begin WPA
-    // status = WiFi.begin(ssid, keyIndex, key); //begin WEP
-  }
-
-  while(!skynetclient.monitor())
-  {
+  while(!skynetclient.monitor()){
+    
     bool skynetStatus = false;
     do {
       skynetStatus = skynetclient.connect(hostname, port);
