@@ -56,10 +56,9 @@ const prog_uchar FUUID[] PROGMEM = {"\"uuid\":\""};
 const prog_uchar FIDENTIFY1[] PROGMEM = {"{\"name\":\"identity\",\"args\":[{"};
 const prog_uchar FIDENTIFY2[] PROGMEM = {"\", \"uuid\":\""};
 const prog_uchar FIDENTIFY3[] PROGMEM = {"\", \"token\":\""};
-const prog_uchar FCLOSE[] PROGMEM = {"\"}]}"};
-const prog_uchar FCLOSE2[] PROGMEM = {"}]}"};
 
-const prog_uchar FQUOTE[] PROGMEM = {"\""};
+const prog_uchar FCLOSE1[] PROGMEM = {"\"}]}"};
+const prog_uchar FCLOSE2[] PROGMEM = {"}]}"};
 
 const prog_uchar FBIND1[] PROGMEM = {"+[{\"result\":\"ok\"}]"};
 

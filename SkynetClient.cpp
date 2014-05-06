@@ -397,10 +397,12 @@ void SkynetClient::sendIdentify(bool credentials)
 
 		xmit(FIDENTIFY3);
 		xmit(temp);
-		xmit(FQUOTE);
+		xmit(FCLOSE1);
 	}
+	else
+		xmit(FCLOSE2);
 
-	xmit(FCLOSE2);
+
 	xmit((char)255);
 	DBGCN();
 }
@@ -691,7 +693,7 @@ void SkynetClient::sendMessage(const char *device, char const *object)
 	xmit(device);
 	xmit(FMESSAGE2);
 	xmit(object);
-	xmit(FCLOSE);
+	xmit(FCLOSE1);
 	xmit((char)255);
 	DBGCN();
 }
@@ -715,7 +717,7 @@ void SkynetClient::logMessage(char const *object)
 	getToken(temp);
 	
 	xmit(temp);
-	xmit(FCLOSE);
+	xmit(FCLOSE1);
 	xmit((char)255);
 	DBGCN();
 }
