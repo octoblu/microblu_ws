@@ -127,7 +127,7 @@ class SkynetClient : public Stream {
 		uint8_t readLine(char *buf, uint8_t max);
 
 		void eeprom_write_bytes(int, char*, int);
-
+		void eeprom_write_byte(int, const char);
 		void eeprom_read_bytes(int, char*, int);
 
 		void processSkynet(char *data, char *ack);

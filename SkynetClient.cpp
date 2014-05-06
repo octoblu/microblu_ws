@@ -397,44 +397,12 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
 {
 	DBGCSN("Skynet Connect");
 
-	char temp[UUIDSIZE];
-
 	status = 1;
-	
-	getUuid(temp);
 
-    //if uuid has been refreshed, save it
-    if (!TOKEN_STRING(data, tok[13], temp ))
-    {
-      	DBGCSN("uuid refresh");
-		strncpy(temp, data + tok[13].start, tok[13].end - tok[13].start);
-		
-      	DBGCS("new: ");
-      	DBGCN(temp);
-		
-      	setUuid(temp);
-    }else
-    {
-    	DBGCSN("no uuid refresh necessary");
-    }
-
-    getToken(temp);
-	
-    //if token has been refreshed, save it
-    if (!TOKEN_STRING(data, tok[15], temp ))
-    {
-		DBGCSN("token refresh");
-	  	strncpy(temp, data + tok[15].start, tok[15].end - tok[15].start);
-
-        DBGCS("new: ");
-      	DBGCN(temp);
-      
-		setToken(temp);
-    }else
-    {
-		DBGCSN("no token refresh necessary");
-    }
-
+	char *temp = data + tok[13].start;
+    setUuid(temp);
+    temp = data + tok[15].start;
+	setToken(temp);
 }
 
 //Credentials have been invalidted, send blank identify for new ones
@@ -659,10 +627,20 @@ void SkynetClient::setMessageDelegate(MessageDelegate newMessageDelegate) {
 	  messageDelegate = newMessageDelegate;
 }
 
+//Arduino Eeprom.write doesnt utilize update, so read to see if we need to refresh first
 void SkynetClient::eeprom_write_bytes(int address, char *buf, int bufSize){
   for(int i = 0; i<bufSize; i++){
-    EEPROM.write(address+i, buf[i]);
+  	if(EEPROM.read(address+i)!=buf[i]){
+  		EEPROM.write(address+i, buf[i]);
+  	}
   }
+}
+
+//Arduino Eeprom.write doesnt utilize update, so read to see if we need to refresh first
+void SkynetClient::eeprom_write_byte(int address, char c){
+  	if(EEPROM.read(address)!=c){
+  		EEPROM.write(address, c);
+  	}
 }
 
 void SkynetClient::eeprom_read_bytes(int address, char *buf, int bufSize){
