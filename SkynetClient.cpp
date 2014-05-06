@@ -378,7 +378,7 @@ void SkynetClient::processNotReady(char *data, jsmntok_t *tok)
 //Credentials have been invalidted, send blank identify for new ones
 void SkynetClient::sendIdentify(bool credentials)
 {
-    DBGCS("Sending: ");
+    DBGCS("Sending(Identify): ");
 
 	xmit((char)0);
 	xmit(EMIT);
@@ -422,13 +422,14 @@ void SkynetClient::processBind(char *data, jsmntok_t *tok, char *ack)
 {
 	bind = 1;
 
-    DBGCS("Sending Bind: ");
+    DBGCS("Sending(Bind): ");
 
 	xmit((char)0);
 	xmit(BND);
 	xmit(ack);
 	xmit(FBIND1);
 	xmit((char)255);
+	DBGCN();
 }
 
 void SkynetClient::processMessage(char *data, jsmntok_t *tok)
@@ -539,7 +540,7 @@ void SkynetClient::xmit(const char *js, jsmntok_t t)
 }
 
 size_t SkynetClient::write(const uint8_t *buf, size_t size) {
-    DBGCS("Sending2: ");
+    DBGCS("Sending(Write): ");
 
 	xmit((char)0);
 
@@ -549,6 +550,7 @@ size_t SkynetClient::write(const uint8_t *buf, size_t size) {
 
 	xmit((char)255);
 
+	DBGCN();
 	return size;
 }
 
@@ -575,7 +577,7 @@ size_t SkynetClient::write(uint8_t c)
 void SkynetClient::flush()
 {
 	if(txbuf.available()){
-		DBGCS("Sending: ");
+		DBGCS("Sending(Flush): ");
 	
 		xmit((char)0);
 	
@@ -585,6 +587,8 @@ void SkynetClient::flush()
 		b64::send(txbuf, *client);
 		
 		xmit((char)255);
+
+		DBGCN();
 	}
 }
 
@@ -679,7 +683,7 @@ void SkynetClient::setUuid(char *uuid)
 
 void SkynetClient::sendMessage(const char *device, char const *object)
 {
-	DBGCS("Sending: ");
+	DBGCS("Sending(Message): ");
 
 	xmit((char)0);
 	xmit(EMIT);
@@ -689,20 +693,20 @@ void SkynetClient::sendMessage(const char *device, char const *object)
 	xmit(object);
 	xmit(FCLOSE);
 	xmit((char)255);
+	DBGCN();
 }
 
 void SkynetClient::logMessage(char const *object)
 {
 	char temp[UUIDSIZE];
 
-	DBGCS("Logging: ");
+	DBGCS("Sending(Log): ");
 
 	xmit((char)0);
 	xmit(EMIT);
 	xmit(FLOG1);
 	xmit(object);
 	xmit(FLOG2);
-
 	getUuid(temp);
 
 	xmit(temp);
@@ -713,4 +717,5 @@ void SkynetClient::logMessage(char const *object)
 	xmit(temp);
 	xmit(FCLOSE);
 	xmit((char)255);
+	DBGCN();
 }
