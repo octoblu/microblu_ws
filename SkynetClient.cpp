@@ -366,30 +366,43 @@ int SkynetClient::monitor()
 //lookup uuid and token if we have them and send in for validation
 void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 {
-	char temp[UUIDSIZE];
+	sendIdentify(EEPROM.read( (uint8_t)EEPROMBLOCKADDRESS) == EEPROMBLOCK);
+}
 
+//Credentials have been invalidted, send blank identify for new ones
+void SkynetClient::processNotReady(char *data, jsmntok_t *tok)
+{
+	sendIdentify(false);
+}
+
+//Credentials have been invalidted, send blank identify for new ones
+void SkynetClient::sendIdentify(bool credentials)
+{
     DBGCS("Sending: ");
 
 	xmit((char)0);
 	xmit(EMIT);
 	xmit(FIDENTIFY1);
-	xmit(data, tok[7]);
-	
-	if( EEPROM.read( (uint8_t)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
+
+	if(credentials)
 	{
+		char temp[UUIDSIZE];
+
 		getUuid(temp);
 
-		xmit(FIDENTIFY2);
+		xmit(FUUID);
 		xmit(temp);
 
 		getToken(temp);
 
 		xmit(FIDENTIFY3);
 		xmit(temp);
+		xmit(FQUOTE);
 	}
 
-	xmit(FCLOSE);
+	xmit(FCLOSE2);
 	xmit((char)255);
+	DBGCN();
 }
 
 //Got credentials back, store if necessary
@@ -403,19 +416,6 @@ void SkynetClient::processReady(char *data, jsmntok_t *tok)
     setUuid(temp);
     temp = data + tok[15].start;
 	setToken(temp);
-}
-
-//Credentials have been invalidted, send blank identify for new ones
-void SkynetClient::processNotReady(char *data, jsmntok_t *tok)
-{
-    DBGCS("Sending: ");
-
-	xmit((char)0);
-	xmit(EMIT);
-	xmit(FIDENTIFY1);
-	xmit(data, tok[11]);
-	xmit(FCLOSE);
-	xmit((char)255);
 }
 
 void SkynetClient::processBind(char *data, jsmntok_t *tok, char *ack)

@@ -50,10 +50,16 @@ const uint8_t SKYNET_RX_BUFFER_SIZE = 64;
 const prog_uchar FLOG1[] PROGMEM = {"{\"name\":\"data\",\"args\":[{"};
 const prog_uchar FLOG2[] PROGMEM = {", \"uuid\":\""};
 
-const prog_uchar FIDENTIFY1[] PROGMEM = {"{\"name\":\"identity\",\"args\":[{\"socketid\":\""};
+const prog_uchar FUUID[] PROGMEM = {"\"uuid\":\""};
+
+
+const prog_uchar FIDENTIFY1[] PROGMEM = {"{\"name\":\"identity\",\"args\":[{"};
 const prog_uchar FIDENTIFY2[] PROGMEM = {"\", \"uuid\":\""};
 const prog_uchar FIDENTIFY3[] PROGMEM = {"\", \"token\":\""};
 const prog_uchar FCLOSE[] PROGMEM = {"\"}]}"};
+const prog_uchar FCLOSE2[] PROGMEM = {"}]}"};
+
+const prog_uchar FQUOTE[] PROGMEM = {"\""};
 
 const prog_uchar FBIND1[] PROGMEM = {"+[{\"result\":\"ok\"}]"};
 
@@ -132,6 +138,7 @@ class SkynetClient : public Stream {
 
 		void processSkynet(char *data, char *ack);
 		void processIdentify(char *data, jsmntok_t *tok);
+		void sendIdentify(bool credentials);
 		void processReady(char *data, jsmntok_t *tok);
 		void processNotReady(char *data, jsmntok_t *tok);
 		void processMessage(char *data, jsmntok_t *tok);
