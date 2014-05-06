@@ -26,57 +26,57 @@
 	#define DBGCS( ... )
 #endif
 
-#define SID_MAXLEN 24
-#define UUIDSIZE 37
-#define TOKENSIZE 33
-#define MAXACK 5
+const uint8_t SID_MAXLEN = 24;
+const uint8_t UUIDSIZE = 37;
+const uint8_t TOKENSIZE = 33;
+const uint8_t MAXACK = 5;
 
-#define HEARTBEATTIMEOUT 60000
-#define SOCKETTIMEOUT 10000UL
+const uint16_t HEARTBEATTIMEOUT = 60000;
+const uint16_t SOCKETTIMEOUT = 10000;
 
-#define EEPROMBLOCKADDRESS 0
-#define EEPROMBLOCK 'S'
-#define TOKENADDRESS EEPROMBLOCKADDRESS+1
-#define UUIDADDRESS TOKENADDRESS+TOKENSIZE
+const uint8_t EEPROMBLOCK = 'S';
+const uint16_t EEPROMBLOCKADDRESS = 0;
+const uint16_t TOKENADDRESS = EEPROMBLOCKADDRESS+1;
+const uint16_t UUIDADDRESS = TOKENADDRESS+TOKENSIZE;
 
-#define MAX_PARSE_OBJECTS 16 //16 needed for Ready from Skynet
-#define MAX_FLASH_STRING 50 //for PROGMEM strings
+const uint8_t MAX_PARSE_OBJECTS = 16; //16 needed for Ready from Skynet
+const uint8_t MAX_FLASH_STRING = 50; //for PROGMEM strings
 
 // Length of static data buffers
-#define SOCKET_RX_BUFFER_SIZE 186 //186 needed for biggest skynet message, READY
-#define SKYNET_TX_BUFFER_SIZE 150 //~150 is needed for firmata's capability query on an uno
-#define SKYNET_RX_BUFFER_SIZE 64
+const uint8_t SOCKET_RX_BUFFER_SIZE = 186; //186 needed for biggest skynet message, READY
+const uint8_t SKYNET_TX_BUFFER_SIZE = 150; //~150 is needed for firmata's capability query on an uno
+const uint8_t SKYNET_RX_BUFFER_SIZE = 64;
 
-#define FLOG1 F("{\"name\":\"data\",\"args\":[{")
-#define FLOG2 F(", \"uuid\":\"")
+const prog_uchar FLOG1[] PROGMEM = {"{\"name\":\"data\",\"args\":[{"};
+const prog_uchar FLOG2[] PROGMEM = {", \"uuid\":\""};
 
-#define FIDENTIFY1 F("{\"name\":\"identity\",\"args\":[{\"socketid\":\"")
-#define FIDENTIFY2 F("\", \"uuid\":\"")
-#define FIDENTIFY3 F("\", \"token\":\"")
-#define FCLOSE F("\"}]}")
+const prog_uchar FIDENTIFY1[] PROGMEM = {"{\"name\":\"identity\",\"args\":[{\"socketid\":\""};
+const prog_uchar FIDENTIFY2[] PROGMEM = {"\", \"uuid\":\""};
+const prog_uchar FIDENTIFY3[] PROGMEM = {"\", \"token\":\""};
+const prog_uchar FCLOSE[] PROGMEM = {"\"}]}"};
 
-#define FBIND1 F("+[{\"result\":\"ok\"}]")
+const prog_uchar FBIND1[] PROGMEM = {"+[{\"result\":\"ok\"}]"};
 
-#define FMESSAGE1 F("{\"name\":\"message\",\"args\":[{\"devices\":\"")
-#define FMESSAGE2 F("\",\"payload\":\"")
+const prog_uchar FMESSAGE1[] PROGMEM = {"{\"name\":\"message\",\"args\":[{\"devices\":\""};
+const prog_uchar FMESSAGE2[] PROGMEM = {"\",\"payload\":\""};
 
-#define FGET1 F("GET /socket.io/1/websocket/")
-#define FGET2 F(" HTTP/1.1\r\nHost: ")
-#define FGET3 F("\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n\r\n")
+const prog_uchar FGET1[] PROGMEM = {"GET /socket.io/1/websocket/"};
+const prog_uchar FGET2[] PROGMEM = {" HTTP/1.1\r\nHost: "};
+const prog_uchar FGET3[] PROGMEM = {"\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n\r\n"};
 
-#define FPOST1 F("POST /socket.io/1/ HTTP/1.1\r\nHost: ")
-#define FPOST2 F("\r\n\r\n")
+const prog_uchar FPOST1[] PROGMEM = {"POST /socket.io/1/ HTTP/1.1\r\nHost: "};
+const prog_uchar FPOST2[] PROGMEM = {"\r\n\r\n"};
 
-#define IDENTIFY "identify"
-#define READY "ready"
-#define NOTREADY "notReady"
-#define BIND "bindSocket"
-#define MESSAGE "message"
+const char IDENTIFY[] = "identify";
+const char READY[] = "ready";
+const char NOTREADY[] = "notReady";
+const char BIND[] = "bindSocket";
+const char MESSAGE[] = "message";
 
-#define EMIT "5:::"
-#define MSG "3:::"
-#define HEARTBEAT "2::"
-#define BND "6:::"
+const char EMIT[] = "5:::";
+const char MSG[] = "3:::";
+const char HEARTBEAT[] = "2::";
+const char BND[] = "6:::";
 
 class SkynetClient : public Stream {
 	public:
@@ -121,11 +121,13 @@ class SkynetClient : public Stream {
 		void xmit(char data);
 		void xmitToken(const char *js, jsmntok_t t);
 		void xmit(IPAddress data);
+		void xmit(const prog_uchar *data);
 
 		uint8_t waitSocketData();
 		uint8_t readLine(char *buf, uint8_t max);
 
 		void eeprom_write_bytes(int, char*, int);
+
 		void eeprom_read_bytes(int, char*, int);
 
 		void processSkynet(char *data, char *ack);

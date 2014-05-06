@@ -492,33 +492,44 @@ void SkynetClient::processSkynet(char *data, char *ack)
 
     if (TOKEN_STRING(data, tok[2], IDENTIFY )) 
     {
-		DBGCSN(IDENTIFY);
+		DBGCN(IDENTIFY);
 		processIdentify(data, tok);
     } 
     else if (TOKEN_STRING(data, tok[2], READY )) 
     {
-		DBGCSN(READY);
+		DBGCN(READY);
 		processReady(data, tok);
     }
     else if (TOKEN_STRING(data, tok[2], NOTREADY )) 
     {
-		DBGCSN(NOTREADY);
+		DBGCN(NOTREADY);
 		processNotReady(data, tok);
     }
     else if (TOKEN_STRING(data, tok[2], BIND )) 
     {
-		DBGCSN(BIND);
+		DBGCN(BIND);
 		processBind(data, tok, ack);
     }
     else if (TOKEN_STRING(data, tok[2], MESSAGE )) 
     {
-		DBGCSN(MESSAGE);
+		DBGCN(MESSAGE);
 		processMessage(data, tok);
     }
     else
     {
 		DBGCS("Unknown:");
     }
+}
+
+void SkynetClient::xmit(const prog_uchar *data) 
+{
+	PGM_P p = reinterpret_cast<PGM_P>(data);
+
+	char buffer[MAX_FLASH_STRING];
+	strcpy_P(buffer, p);
+
+	DBGC(buffer);
+	client->print(buffer);
 }
 
 void SkynetClient::xmit(const __FlashStringHelper* data) 
