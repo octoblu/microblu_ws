@@ -1,4 +1,36 @@
-/*
+/* 
+ *                SSSSS  kk                            tt    
+ *               SS      kk  kk yy   yy nn nnn    eee  tt    
+ *                SSSSS  kkkkk  yy   yy nnn  nn ee   e tttt  
+ *                    SS kk kk   yyyyyy nn   nn eeeee  tt    
+ *                SSSSS  kk  kk      yy nn   nn  eeeee  tttt 
+ *                               yyyyy                         
+ * 
+ * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR 
+ * THE INTERNET OF THINGS.
+ * 
+ * This sketch is for Arduino 1.5 and waits for firmata commands via Skynet. 
+ * For a node example to communicate with the Arduino, see 
+ * https://www.npmjs.org/package/skynet-serial
+*
+ * Main changes from Standard Firmata were:
+ * Pass the SkynetClient object to Firmata.begin() instead of baud rate or 
+ * Serial object.
+ *
+ * Make sure systemResetCallback doesnt mess with the wifis's unavailable pins. 
+ * If you mess with them remotely beyond that, its on you. (7, 10,11,12 and 13)
+ *
+ * Works with communication shields compatible with Client library from
+ * Arduino.
+ * 
+ * Also requires the ArduinoJsonParser 
+ * https://github.com/bblanchon/ArduinoJsonParser 
+ * 
+ * You can turn on debugging within SkynetClient.h by uncommenting 
+ * #define SKYNETCLIENT_DEBUG
+ */
+
+ /*
  * Firmata is a generic protocol for communicating with microcontrollers
  * from software on a host computer. It is intended to work with
  * any host computer software package.
@@ -609,6 +641,17 @@ void systemResetCallback()
 void setup() 
 {
   Serial.begin(9600);
+
+  // check for the presence of the shield:
+  if (WiFi.status() == WL_NO_SHIELD) {
+    Serial.println("WiFi shield not present");
+    // don't continue:
+    while (true);
+  }
+
+  String fv = WiFi.firmwareVersion();
+  if ( fv != "1.1.0" )
+    Serial.println("Please upgrade the firmware");
 
   Firmata.setFirmwareVersion(FIRMATA_MAJOR_VERSION, FIRMATA_MINOR_VERSION);
 

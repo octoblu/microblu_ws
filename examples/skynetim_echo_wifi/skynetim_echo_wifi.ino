@@ -52,6 +52,17 @@ void setup()
 {
   Serial.begin(9600);
 
+  // check for the presence of the shield:
+  if (WiFi.status() == WL_NO_SHIELD) {
+    Serial.println("WiFi shield not present");
+    // don't continue:
+    while (true);
+  }
+
+  String fv = WiFi.firmwareVersion();
+  if ( fv != "1.1.0" )
+    Serial.println("Please upgrade the firmware");
+  
   skynetclient.setMessageDelegate(onMessage);
 }
 
