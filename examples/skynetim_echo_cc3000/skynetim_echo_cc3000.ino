@@ -57,8 +57,8 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
                                    // received before closing the connection.  If you know the server
                                    // you're accessing is quick to respond, you can reduce this value.
                 
-#define HOSTNAME      "skynet.im"
-#define PORT          80
+const char HOSTNAME[] = "skynet.im";
+const uint8_t PORT = 80;
 
 Adafruit_CC3000_Client client = Adafruit_CC3000_Client();
   
