@@ -119,7 +119,7 @@ class SkynetClient : public Stream {
 		void xmit(const __FlashStringHelper* data);
 		void xmit(const char *data);
 		void xmit(char data);
-		void xmitToken(const char *js, jsmntok_t t);
+		void xmit(const char *js, jsmntok_t t);
 		void xmit(IPAddress data);
 		void xmit(const prog_uchar *data);
 

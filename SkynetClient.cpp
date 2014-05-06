@@ -373,7 +373,7 @@ void SkynetClient::processIdentify(char *data, jsmntok_t *tok)
 	xmit((char)0);
 	xmit(EMIT);
 	xmit(FIDENTIFY1);
-	xmitToken(data, tok[7]);
+	xmit(data, tok[7]);
 	
 	if( EEPROM.read( (uint8_t)EEPROMBLOCKADDRESS) == EEPROMBLOCK )
 	{
@@ -445,7 +445,7 @@ void SkynetClient::processNotReady(char *data, jsmntok_t *tok)
 	xmit((char)0);
 	xmit(EMIT);
 	xmit(FIDENTIFY1);
-	xmitToken(data, tok[11]);
+	xmit(data, tok[11]);
 	xmit(FCLOSE);
 	xmit((char)255);
 }
@@ -561,7 +561,7 @@ void SkynetClient::xmit(char data)
 	client->print(data);
 }
 
-void SkynetClient::xmitToken(const char *js, jsmntok_t t) 
+void SkynetClient::xmit(const char *js, jsmntok_t t) 
 {
 	int i = 0;
 	for(i = t.start; i < t.end; i++) {
