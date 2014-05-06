@@ -1,5 +1,5 @@
 
-#include <Skynetclient.h>
+#include <SkynetClient.h>
 
 #define TOKEN_STRING(js, t, s) \
 	(strncmp(js+(t).start, s, (t).end - (t).start) == 0 \
