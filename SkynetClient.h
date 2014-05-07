@@ -40,12 +40,12 @@ const uint16_t TOKENADDRESS = EEPROMBLOCKADDRESS+1;
 const uint16_t UUIDADDRESS = TOKENADDRESS+TOKENSIZE;
 
 const uint8_t MAX_PARSE_OBJECTS = 16; //16 needed for Ready from Skynet
-const uint8_t MAX_FLASH_STRING = 50; //for PROGMEM strings
+const uint8_t MAX_FLASH_STRING = 50; //for longst PROGMEM string, FGET3
 
 // Length of static data buffers
 const uint8_t SOCKET_RX_BUFFER_SIZE = 186; //186 needed for biggest skynet message, READY
 const uint8_t SKYNET_TX_BUFFER_SIZE = 150; //~150 is needed for firmata's capability query on an uno
-const uint8_t SKYNET_RX_BUFFER_SIZE = 64;
+const uint8_t SKYNET_RX_BUFFER_SIZE = 64; //~? needed for firmata to fill with response
 
 const prog_uchar FLOG1[] PROGMEM = {"{\"name\":\"data\",\"args\":[{"};
 const prog_uchar FLOG2[] PROGMEM = {", \"uuid\":\""};
