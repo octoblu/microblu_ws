@@ -9,8 +9,8 @@
  * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR 
  * THE INTERNET OF THINGS.
  * 
- * This sketch send data to the Skynet data endpoint for logging and graphing
- * by skynet itself!
+ * This sketch reads analog0 and analog1 and sends data to the Skynet data 
+ * endpoint for logging and graphing!
  *
  * Works with ethernet shields compatible with EthernetClient library from
  * Arduino. If you don't know, grab the original 
@@ -73,8 +73,22 @@ void loop() {
     Serial.println(uuid);   
   }
 
+  char buf[5];
+  char message[30];
+  
+  strcpy(message, "\"light\":");
+  itoa(analogRead(A0), buf, 10);
+  strcat(message,buf);
+  
+  strcat(message, ",\"temp\":");
+  itoa(analogRead(A1), buf, 10);
+  strcat(message,buf);
+  
+  //Serial.println(message);
+  
   //message to log MUST be comma seperated key value pair(s) and may
   //not be be an object or array
-  skynetclient.logMessage("\"humidity\":123,\"temperature\":\"21C\"");
+  //looks like "light":"423","temp":"356"
+  skynetclient.logMessage(message);
   delay(1000);
 }
