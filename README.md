@@ -11,7 +11,7 @@ Skynet Firmware allows you to connect to Skynet.im via your Arduino and an Ardui
  * http://arduino.cc/en/Main/ArduinoEthernetShield
  * http://arduino.cc/en/Main/ArduinoBoardEthernet
  * http://arduino.cc/en/Main/ArduinoWiFiShield
- * http://www.adafruit.com/products/1469
+ * http://www.adafruit.com/products/1491
  * https://pinocc.io/
  * https://www.spark.io/
 
