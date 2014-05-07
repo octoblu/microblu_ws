@@ -14,7 +14,7 @@
  *
  * This sketch requires a port of the Adafruit CC3000 firmare library. Until
  * Adafruit accepts it, delete theirs and grab ours at:
- * https://github.com/jacobrosenthal/Adafruit_CC3000_Library/tree/feature/inherit-client
+ * https://github.com/jacobrosenthal/Adafruit_CC3000_Library/
  *
  * Also requires the ArduinoJsonParser 
  * https://github.com/bblanchon/ArduinoJsonParser 
