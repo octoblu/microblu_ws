@@ -4,8 +4,8 @@
 #include "Arduino.h"
 #include "Client.h"
 #include <EEPROM.h>
-#include "utility/ringbuffer.h"
-#include "utility/b64.h"
+#include "ringbuffer.h"
+#include "b64.h"
 #include <JsonParser.h>
 
 #define SKYNETCLIENT_DEBUG
