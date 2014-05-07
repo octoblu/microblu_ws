@@ -55,6 +55,17 @@ void onMessage(const char * const data) {
   }
 }
 ```
+###Log
+Even simpler than that is to send data to Skynet: 
+
+Then call log can do whatever you want with that message including json parse it or string match it:
+```cpp
+void loop(){
+    //Craft a string with your data like "light":"423","temp":"356"
+  skynetclient.logMessage(message);
+}
+```
+Now you can subscribe to your data elsewhere. See the api page for rest examples with curl, js, etc! http://skynet.im/#api
 ###Bind
 Secondly, we've created the ability to bind 2 devices like a virtual serial cable. Once complete you can simple read and write like a Serial device:
 ```cpp
@@ -64,7 +75,7 @@ void loop() {
   	Serial.print(skynetclient.read());
 }
 ```
-This can be seen in our Firmata example using https://www.npmjs.org/package/skynet-serial.
+This can be seen in our https://www.npmjs.org/package/skynet-serial example in the node_client directory.
 
 LICENSE
 -------
