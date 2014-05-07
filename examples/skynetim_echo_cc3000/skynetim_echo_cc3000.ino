@@ -9,15 +9,11 @@
  * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR
  * THE INTERNET OF THINGS.
  *
- * This sketch parses any messages it receives and echos them back to the
- * sender.
+ * This sketch parses any messages it receives and echos them to the Serial.
  *
  * This sketch requires a port of the Adafruit CC3000 firmare library. Until
  * Adafruit accepts it, delete theirs and grab ours at:
  * https://github.com/jacobrosenthal/Adafruit_CC3000_Library/
- *
- * Also requires the ArduinoJsonParser 
- * https://github.com/bblanchon/ArduinoJsonParser 
  *
  * You will notice we're using F() in Serial.print. It is covered briefly on
  * the arduino print page but it means we can store our strings in program
@@ -35,7 +31,7 @@
 #include "utility/debug.h"
 #include "SPI.h"
 #include "SkynetClient.h"
-#include <JsonParser.h>
+#include "jsmn.h"
 
 
 // These are the interrupt and control pins
@@ -96,28 +92,8 @@ void setup()
 
 void onMessage(const char * const data) {
   
-  JsonParser<16> parser;
-
   Serial.print("Parse ");
   Serial.println(data);
-
-  JsonHashTable hashTable = parser.parseHashTable((char*)data);
-
-  if (!hashTable.success())
-  {
-      Serial.println("JsonParser.parseHashTable() failed");
-      return;
-  }
-    
-  char* payload = hashTable.getString("payload");
-  Serial.print("payload=");
-  Serial.println(payload);
-    
-  char* fromUuid = hashTable.getString("fromUuid");
-  Serial.print("fromUuid=");
-  Serial.println(fromUuid);
-
-  skynetclient.sendMessage(fromUuid, payload);
 }
 
 void loop() {

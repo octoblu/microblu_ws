@@ -17,9 +17,6 @@
  * Adafruit accepts it, delete theirs and grab ours at:
  * https://github.com/jacobrosenthal/Adafruit_CC3000_Library/
  *
- * Also requires the ArduinoJsonParser 
- * https://github.com/bblanchon/ArduinoJsonParser 
- * 
  * Sadly the cc3000 codebase is very large especially when compared to other 
  * communication libraries:
  * 
@@ -92,7 +89,7 @@
 #include <ccspi.h>
 #include <string.h>
 #include "utility/debug.h"
-#include <JsonParser.h>
+#include "jsmn.h"
 
 
 //For the Mega only, be sure to follow the cc3000 guide and solder the pins

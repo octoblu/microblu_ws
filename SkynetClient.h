@@ -6,7 +6,7 @@
 #include <EEPROM.h>
 #include "ringbuffer.h"
 #include "b64.h"
-#include <JsonParser.h>
+#include "jsmn.h"
 
 #define SKYNETCLIENT_DEBUG
 #ifdef SKYNETCLIENT_DEBUG

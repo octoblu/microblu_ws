@@ -23,9 +23,6 @@
  * Works with communication shields compatible with Client library from
  * Arduino.
  * 
- * Also requires the ArduinoJsonParser 
- * https://github.com/bblanchon/ArduinoJsonParser 
- * 
  * You can turn on debugging within SkynetClient.h by uncommenting 
  * #define SKYNETCLIENT_DEBUG
  */
@@ -68,7 +65,7 @@
 #include <WiFi.h>
 #include "SPI.h"
 #include "SkynetClient.h"
-#include <JsonParser.h>
+#include "jsmn.h"
 
 WiFiClient client;
 

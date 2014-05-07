@@ -19,8 +19,7 @@ Skynet Firmware allows you to connect to Skynet.im via your Arduino and an Ardui
 ##Install
 * Clone or download and unzip.
 * Rename the resulting folder to remove any - characters, and place folder in the libraries directory of your Arduino sketch directory. EX Documents/Arduino/libraries/skynet_firmware_arduino_master
-* Also requires the ArduinoJsonParser library https://github.com/bblanchon/ArduinoJsonParser  
-* After adding both, Close/reopen arduino and if all is well you'll find File->Examples->SkynetClient
+* After adding, Close/reopen arduino and if all is well you'll find File->Examples->SkynetClient
 
 ##Examples
 Find full examples in the File->Examples->SkynetClient menu but generally, theres 2 ways to use onMessage function or bind.
@@ -37,22 +36,13 @@ void loop(){
 }
 ```
 
-Then you can do whatever you want with that message including json parse it or string match it:
+Then you can do whatever you want with that message. You can even grab a third party json parser, here we print it to console:
 ```cpp
 void onMessage(const char * const data) {
-  JsonParser<16> parser;
 
   Serial.print("Parse ");
   Serial.println(data);
 
-  JsonHashTable hashTable = parser.parseHashTable((char*)data);
-
-  if (strcmp(payload, "on") == 0)
-  {
-      digitalWrite(LEDPIN, HIGH)
-  }else{
-      digitalWrite(LEDPIN, LOW)
-  }
 }
 ```
 ###Bind

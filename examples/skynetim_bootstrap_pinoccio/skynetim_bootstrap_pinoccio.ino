@@ -39,7 +39,7 @@
 #include "Ethernet.h"
 #include "SPI.h"
 #include "SkynetClient.h"
-#include <JsonParser.h>
+#include "jsmn.h"
 
 GSTcpClient client(Scout.wifi.gs);
 

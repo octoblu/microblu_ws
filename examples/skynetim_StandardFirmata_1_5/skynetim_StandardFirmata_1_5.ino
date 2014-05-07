@@ -24,9 +24,6 @@
  * Arduino. If you don't know, grab the original 
  * http://arduino.cc/en/Main/ArduinoEthernetShield
  * 
- * Also requires the ArduinoJsonParser 
- * https://github.com/bblanchon/ArduinoJsonParser 
- * 
  * You can turn on debugging within SkynetClient.h by uncommenting 
  * #define SKYNETCLIENT_DEBUG
  */
@@ -69,7 +66,7 @@
 #include "Ethernet.h"
 #include "SPI.h"
 #include "SkynetClient.h"
-#include <JsonParser.h>
+#include "jsmn.h"
 
 EthernetClient client;
 
