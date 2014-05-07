@@ -11,6 +11,9 @@ Skynet Firmware allows you to connect to Skynet.im via your Arduino and an Ardui
  * http://arduino.cc/en/Main/ArduinoEthernetShield
  * http://arduino.cc/en/Main/ArduinoBoardEthernet
  * http://arduino.cc/en/Main/ArduinoWiFiShield
+ * http://www.adafruit.com/products/1469
+ * https://pinocc.io/
+ * https://www.spark.io/
 
 ##Videos
 * https://www.youtube.com/watch?v=oQzWKPER_ic
@@ -18,13 +21,13 @@ Skynet Firmware allows you to connect to Skynet.im via your Arduino and an Ardui
 
 ##Install
 * Clone or download and unzip.
-* Rename the resulting folder to remove any - characters, and place folder in the libraries directory of your Arduino sketch directory. EX Documents/Arduino/libraries/skynet_firmware_arduino_master
+* Rename the resulting folder to remove any - characters, and place folder in the libraries directory of your Arduino sketch directory. EX ~/Documents/Arduino/libraries/skynet_firmware_arduino_master
 * Also requires the ArduinoJsonParser library https://github.com/bblanchon/ArduinoJsonParser  
 * After adding both, Close/reopen arduino and if all is well you'll find File->Examples->SkynetClient
 
 ##Examples
-Find full examples in the File->Examples->SkynetClient menu but generally, theres 2 ways to use onMessage function or bind.
-###Function
+Find full examples in the File->Examples->SkynetClient menu but generally, theres 3 ways to use: onMessage, log message,  or bind.
+###onMessage
 The simplest method is to register a function to be called when Skynet receives a message for your device:
 ```cpp
 void setup()
@@ -56,18 +59,16 @@ void onMessage(const char * const data) {
 }
 ```
 ###Log
-Even simpler than that is to send data to Skynet: 
-
-Then call log can do whatever you want with that message including json parse it or string match it:
+Even simpler than that is to just send data to Skynet with the logMessage command: 
 ```cpp
 void loop(){
     //Craft a string with your data like "light":"423","temp":"356"
   skynetclient.logMessage(message);
 }
 ```
-Now you can subscribe to your data elsewhere. See the api page for rest examples with curl, js, etc! http://skynet.im/#api
+Now you can subscribe to your data elsewhere. See the api page for rest examples with Rest, Javascript, and more! http://skynet.im/#api
 ###Bind
-Secondly, we've created the ability to bind 2 devices like a virtual serial cable. Once complete you can simple read and write like a Serial device:
+Lastly, we've created the ability to bind 2 devices to just Skynet like a virtual serial cable. This is good for passing lots of information between devices without all the addressing overhead. You can read the data out of the Skynet Client just like a Serial device:
 ```cpp
 void loop() {
   skynetclient.monitor();
@@ -75,7 +76,7 @@ void loop() {
   	Serial.print(skynetclient.read());
 }
 ```
-This can be seen in our https://www.npmjs.org/package/skynet-serial example in the node_client directory.
+This can be seen in our Firmata sketch paired with the Node example in the node_client directory. (see also: https://www.npmjs.org/package/skynet-serial)
 
 LICENSE
 -------
