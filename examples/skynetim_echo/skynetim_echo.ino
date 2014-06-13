@@ -9,15 +9,11 @@
  * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR 
  * THE INTERNET OF THINGS.
  * 
- * This sketch parses any messages it receives and echos them back to the
- * sender.
+ * This sketch parses any messages it receives and echos them to the Serial.
  *
  * Works with ethernet shields compatible with EthernetClient library from
  * Arduino. If you don't know, grab the original 
  * http://arduino.cc/en/Main/ArduinoEthernetShield
- * 
- * Also requires the ArduinoJsonParser 
- * https://github.com/bblanchon/ArduinoJsonParser 
  * 
  * You will notice we're using F() in Serial.print which might be new to you
  * Its covered briefly on the arduino print page but it means we can store
@@ -31,7 +27,7 @@
 #include "Ethernet.h"
 #include "SPI.h"
 #include "SkynetClient.h"
-#include <JsonParser.h>
+#include "jsmn.h"
 
 EthernetClient client;
 
@@ -58,29 +54,8 @@ void setup()
 }
 
 void onMessage(const char * const data) {
-  
-  JsonParser<16> parser;
-
   Serial.print("Parse ");
   Serial.println(data);
-
-  JsonHashTable hashTable = parser.parseHashTable((char*)data);
-
-  if (!hashTable.success())
-  {
-      Serial.println("JsonParser.parseHashTable() failed");
-      return;
-  }
-    
-  char* payload = hashTable.getString("payload");
-  Serial.print("payload=");
-  Serial.println(payload);
-    
-  char* fromUuid = hashTable.getString("fromUuid");
-  Serial.print("fromUuid=");
-  Serial.println(fromUuid);
-
-  skynetclient.sendMessage(fromUuid, payload);
 }
 
 void loop() {

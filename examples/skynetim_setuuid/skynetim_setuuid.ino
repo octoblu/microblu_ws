@@ -17,11 +17,10 @@
 #include "SkynetClient.h"
 #include <EEPROM.h>
 #include "Ethernet.h"
+#include "jsmn.h"
 
 #define UUID  "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 #define TOKEN "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-
-#include <JsonParser.h>
 
 EthernetClient client; //just need a client to get a Skynet object
 SkynetClient skynetclient(client);

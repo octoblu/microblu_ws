@@ -1,12 +1,17 @@
 #ifndef _SKYNETCLIENT_H
 #define _SKYNETCLIENT_H
 
+#ifdef SPARK
+#include "application.h"
+#else
 #include "Arduino.h"
 #include "Client.h"
 #include <EEPROM.h>
-#include "utility/ringbuffer.h"
-#include "utility/b64.h"
-#include <JsonParser.h>
+#endif
+
+#include "jsmn.h"
+#include "ringbuffer.h"
+#include "b64.h"
 
 #define SKYNETCLIENT_DEBUG
 #ifdef SKYNETCLIENT_DEBUG
