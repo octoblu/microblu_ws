@@ -14,10 +14,11 @@
  * but sometimes you want to set known values.
  */
 
-#include "SkynetClient.h"
 #include <EEPROM.h>
-#include "Ethernet.h"
+#include "SkynetClient.h"
 #include "jsmn.h"
+#include <SPI.h>
+#include "Ethernet.h"
 
 #define UUID  "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 #define TOKEN "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"

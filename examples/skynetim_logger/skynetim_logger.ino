@@ -25,10 +25,10 @@
  */
 
 #include <EEPROM.h>
-#include "Ethernet.h"
-#include "SPI.h"
 #include "SkynetClient.h"
-#include <JsonParser.h>
+#include "jsmn.h"
+#include "SPI.h"
+#include "Ethernet.h"
 
 EthernetClient client;
 
@@ -73,18 +73,9 @@ void loop() {
     Serial.println(uuid);   
   }
 
-  char buf[5];
-  char message[30];
-  
-  strcpy(message, "\"light\":");
-  itoa(analogRead(A0), buf, 10);
-  strcat(message,buf);
-  
-  strcat(message, ",\"temp\":");
-  itoa(analogRead(A1), buf, 10);
-  strcat(message,buf);
-  
-  //Serial.println(message);
+  String messageString = "\"light\":" + String(int(analogRead(A0))) + ",\"temp\":" + String(int(analogRead(A1)));
+  char message[messageString.length()+1];
+  messageString.toCharArray(message, messageString.length()+1);
   
   //message to log MUST be comma seperated key value pair(s) and may
   //not be be an object or array
