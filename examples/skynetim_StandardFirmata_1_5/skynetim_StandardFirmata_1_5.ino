@@ -63,10 +63,10 @@
 #include <Wire.h>
 #include <Firmata.h>
 #include <EEPROM.h>
-#include "Ethernet.h"
-#include "SPI.h"
 #include "SkynetClient.h"
 #include "jsmn.h"
+#include "SPI.h"
+#include "Ethernet.h"
 
 EthernetClient client;
 

@@ -24,10 +24,10 @@
  */
 
 #include <EEPROM.h>
-#include "Ethernet.h"
-#include "SPI.h"
 #include "SkynetClient.h"
 #include "jsmn.h"
+#include "SPI.h"
+#include "Ethernet.h"
 
 EthernetClient client;
 
@@ -54,7 +54,7 @@ void setup()
 }
 
 void onMessage(const char * const data) {
-  Serial.print("Parse ");
+  Serial.print(F("Parse: "));
   Serial.println(data);
 }
 

@@ -13,23 +13,15 @@
  * For a node example to communicate with the Arduino, see 
  * https://www.npmjs.org/package/skynet-serial
  *
- * This sketch requires a port of the Adafruit CC3000 firmare library. Until
- * Adafruit accepts it, delete theirs and grab ours at:
- * https://github.com/jacobrosenthal/Adafruit_CC3000_Library/
+ * Should work with any cc3000 shield or breakout like Adafruit or Sparkfun:
+ * https://www.sparkfun.com/products/12071
+ *
+ * However no matter which you choose, we have a requirement on the Sparkfun
+ * library:
+ * https://github.com/sparkfun/SFE_CC3000_Library/
  *
  * Sadly the cc3000 codebase is very large especially when compared to other 
- * communication libraries:
- * 
- * Arduino Wifi
- * ~8,296 129 bytes global variables
- * 
- * Arduino ethernet
- * ~13,512 272 bytes global variables
- * 
- * Adafruit cc3000
- * ~17,634 607 bytes global variables
- * 
- * When combined with Skynet and Firmata there is just NO SPACE left on an Uno. 
+ * communication libraries. When combined with Skynet and Firmata there is just NO SPACE left on an Uno. 
  * Thus unlike other Firmata sketches, we've removed i2c support in order to fit
  * everything.
  * 
@@ -39,9 +31,9 @@
  * Pass the SkynetClient object to Firmata.begin() instead of baud rate or 
  * Serial object.
  *
- * Make sure systemResetCallback doesnt mess with the cc3000's unavailable pins. 
- * If you mess with them remotely beyond that, its on you. (3,5,10,11,12 and 
- * 13 + 50,51,52,53 for Mega)
+ * Make sure systemResetCallback doesnt mess with the ethernet's unavailable pins. 
+ * If you mess with them remotely beyond that, its on you. (whatever you set below 
+ * plus 10, 11, 12 and 13)
  *
  * You can turn on debugging within SkynetClient.h by uncommenting
  * #define SKYNETCLIENT_DEBUG but note this takes up a ton of program space
@@ -83,45 +75,32 @@
 //#include <Wire.h>
 #include <Firmata.h>
 #include <EEPROM.h>
-#include "SPI.h"
 #include "SkynetClient.h"
-#include <Adafruit_CC3000.h>
-#include <ccspi.h>
-#include <string.h>
-#include "utility/debug.h"
 #include "jsmn.h"
+#include <SPI.h>
+#include <SFE_CC3000.h>
+#include <SFE_CC3000_Client.h>
 
+// Pins
+#define CC3000_INT      2   // Needs to be an interrupt pin (D2/D3) //Adafruit is 3
+#define CC3000_EN       7   // Can be any digital pin //Adafruit is 5
+#define CC3000_CS       10  // Preferred is pin 10 on Uno
 
-//For the Mega only, be sure to follow the cc3000 guide and solder the pins
-//https://learn.adafruit.com/adafruit-cc3000-wifi/overview
-//you'llalso need much bigger buffers in the SkynetClient.h file.
-//SOCKET_RX_BUFFER_SIZE 210, SKYNET_TX_BUFFER_SIZE 512, SKYNET_RX_BUFFER_SIZE 256 has worked in the past
+// Global Variables
+SFE_CC3000 wifi = SFE_CC3000(CC3000_INT, CC3000_EN, CC3000_CS);
 
+SFE_CC3000_Client client = SFE_CC3000_Client(wifi);
 
-#define ADAFRUIT_CC3000_IRQ   3  // MUST be an interrupt pin!
-// These can be any two pins
-#define ADAFRUIT_CC3000_VBAT  5
-#define ADAFRUIT_CC3000_CS    10
-// Use hardware SPI for the remaining pins
-// On an UNO, SCK = 13, MISO = 12, and MOSI = 11
-Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
-                                         SPI_CLOCK_DIVIDER); // you can change this clock speed
-
-#define WLAN_SSID       "myNetwork"           // cannot be longer than 32 characters!
-#define WLAN_PASS       "myPassword"
-// Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
-#define WLAN_SECURITY   WLAN_SEC_WPA2
-
-#define IDLE_TIMEOUT_MS  3000      // Amount of time to wait (in milliseconds) with no data 
-                                   // received before closing the connection.  If you know the server
-                                   // you're accessing is quick to respond, you can reduce this value.
-                
-const char HOSTNAME[] = "skynet.im";
-const int PORT = 80;
-
-Adafruit_CC3000_Client client = Adafruit_CC3000_Client();
+// Constants
+char ssid[] = "yournetworkname";     //  your network SSID (name)
+char pass[] = "yourpassword";  // your WPA network password
+unsigned int ap_security = WLAN_SEC_WPA2; // Security of network
+unsigned int timeout = 30000;             // Milliseconds
 
 SkynetClient skynetclient(client);
+
+char hostname[] = "skynet.im";
+int port = 80;
 
 //// move the following defines to Firmata.h?
 //#define I2C_WRITE B00000000
@@ -651,8 +630,8 @@ void systemResetCallback()
   // otherwise, pins default to digital output
   for (byte i=0; i < TOTAL_PINS; i++) {
     
-    // skip SPI pins for cc3000 on uno or mega
-    if ( (i==3) || (i==4) || (i==5) || (i==10) ||(i==11) ||(i==12) ||(i==13) || (i==MOSI) || (i==MISO) || (i==SCK) || (i==SS) )
+    // skip SPI pins for Ethernet/Wifi Shield
+    if ( (i==MOSI) || (i==MISO) || (i==SCK) || (i=CC3000_INT) || (i=CC3000_EN) || (i=CC3000_CS) )
       continue;
       
     if (IS_PIN_ANALOG(i)) {
@@ -681,27 +660,13 @@ void setup()
 {
   Serial.begin(9600);
   
-  /* Initialise the module */
-  Serial.println(F("\nInitializing..."));
-  if (!cc3000.begin())
-  {
-    Serial.println(F("Couldn't begin()! Check your wiring?"));
+  // Initialize CC3000 (configure SPI communications)
+  if ( wifi.init() ) {
+    Serial.println(F("CC3000 initialization complete"));
+  } else {
+    Serial.println(F("Something went wrong during CC3000 init!"));
     while(1);
   }
-  
-  if (!cc3000.connectToAP(WLAN_SSID, WLAN_PASS, WLAN_SECURITY)) {
-    Serial.println(F("Failed!"));
-    while(1);
-  }
-
-  Serial.println(F("Connected!"));
-  
-  /* Wait for DHCP to complete */
-  Serial.println(F("Request DHCP"));
-  while (!cc3000.checkDHCP())
-  {
-    delay(100); // ToDo: Insert a DHCP timeout!
-  }  
 
   Firmata.setFirmwareVersion(FIRMATA_MAJOR_VERSION, FIRMATA_MINOR_VERSION);
 
@@ -722,24 +687,34 @@ void setup()
  *============================================================================*/
 void loop() 
 {
-  while(!skynetclient.monitor()){
-    
-    bool skynetStatus = false;
-    do {
-      skynetStatus = skynetclient.connect(HOSTNAME, PORT);
-    } while (!skynetStatus);
-
-    Serial.println(F("Connected!"));
-    
-    char uuid[UUIDSIZE];
   
-    skynetclient.getUuid(uuid);
-    Serial.print(F("uuid: "));
-    Serial.println(uuid);
+  while(!skynetclient.monitor())
+  {
+    // Connect to AP using DHCP
+    Serial.print(F("Connecting to SSID: "));
+    Serial.println(ssid);
+    if(wifi.connect(ssid, ap_security, pass, timeout)) 
+    {
+      bool skynetStatus = false;
+      do {
+        skynetStatus = skynetclient.connect(hostname, port);
+      } while (!skynetStatus);
+      
+      Serial.println(F("Connected!"));
+      
+      char uuid[UUIDSIZE];
     
-    skynetclient.getToken(uuid);
-    Serial.print(F("token: "));
-    Serial.println(uuid);
+      skynetclient.getUuid(uuid);
+      Serial.print(F("uuid: "));
+      Serial.println(uuid);
+      
+      skynetclient.getToken(uuid);
+      Serial.print(F("token: "));
+      Serial.println(uuid);
+    }else
+    {
+      Serial.println(F("Error: Could not connect to AP"));
+    }
   }
   
   byte pin, analogPin;

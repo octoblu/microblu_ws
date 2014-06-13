@@ -25,10 +25,10 @@
  */
 
 #include <EEPROM.h>
-#include <WiFi.h>
-#include "SPI.h"
 #include "SkynetClient.h"
 #include "jsmn.h"
+#include "SPI.h"
+#include <WiFi.h>
 
 WiFiClient client;
 
@@ -50,21 +50,20 @@ void setup()
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println(F("WiFi shield not present"));
     // don't continue:
     while (true);
   }
 
   String fv = WiFi.firmwareVersion();
   if ( fv != "1.1.0" )
-    Serial.println("Please upgrade the firmware");
+    Serial.println(F("Please upgrade the firmware"));
   
   skynetclient.setMessageDelegate(onMessage);
 }
 
 void onMessage(const char * const data) {
-  
-  Serial.print("Parse ");
+  Serial.print(F("Parse: "));
   Serial.println(data);
 }
 

@@ -8,8 +8,9 @@
  * 
  * SkynetClient for http://skynet.im, OPEN COMMUNICATIONS NETWORK & API FOR 
  * THE INTERNET OF THINGS.
- *
- * This sketch parses any messages it receives and echos them to the Serial.
+ * 
+ * This sketch reads analog0 and analog1 and sends data to the Skynet data 
+ * endpoint for logging and graphing!
  *
  * Should work with any cc3000 shield or breakout like Adafruit or Sparkfun:
  * https://www.sparkfun.com/products/12071
@@ -58,6 +59,9 @@ void setup()
 {
   Serial.begin(9600);
   
+  ConnectionInfo connection_info;
+  int i;
+    
   // Initialize CC3000 (configure SPI communications)
   if ( wifi.init() ) {
     Serial.println(F("CC3000 initialization complete"));
@@ -66,16 +70,10 @@ void setup()
     while(1);
   }
   
-  skynetclient.setMessageDelegate(onMessage);
-}
-
-void onMessage(const char * const data) {
-  Serial.print(F("Parse: "));
-  Serial.println(data);
 }
 
 void loop() {
-
+  
   while(!skynetclient.monitor())
   {
     // Connect to AP using DHCP
@@ -104,4 +102,14 @@ void loop() {
       Serial.println(F("Error: Could not connect to AP"));
     }
   }
+
+  String messageString = "\"light\":" + String(int(analogRead(A0))) + ",\"temp\":" + String(int(analogRead(A1)));
+  char message[messageString.length()+1];
+  messageString.toCharArray(message, messageString.length()+1);
+  
+  //message to log MUST be comma seperated key value pair(s) and may
+  //not be be an object or array
+  //looks like "light":"423","temp":"356"
+  skynetclient.logMessage(message);
+  delay(1000);
 }
