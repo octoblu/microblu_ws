@@ -7,11 +7,11 @@ SS      kk  kk yy   yy nn nnn    eee  tt
                 yyyyy
 ```
 
-Skynet Firmware allows you to connect to Skynet.im via your Arduino and an Arduino ethernet or wifi shield (or any other device that properly implements the Client interface)
+Skynet OS allows you to connect to Skynet.im via your Arduino and an Arduino ethernet or wifi shield (or any other device that properly implements the Client interface)
  * http://arduino.cc/en/Main/ArduinoEthernetShield
  * http://arduino.cc/en/Main/ArduinoBoardEthernet
  * http://arduino.cc/en/Main/ArduinoWiFiShield
- * http://www.adafruit.com/products/1491
+ * https://www.sparkfun.com/products/12071
  * https://pinocc.io/
  * https://www.spark.io/
 
@@ -21,17 +21,17 @@ Skynet Firmware allows you to connect to Skynet.im via your Arduino and an Ardui
 
 ##Install
 * Clone or download and unzip.
-* Rename the resulting folder to remove any - characters, and place folder in the libraries directory of your Arduino sketch directory. EX Documents/Arduino/libraries/skynet_firmware_arduino_master
-* After adding, Close/reopen arduino and if all is well you'll find File->Examples->SkynetClient
+* Rename the resulting folder to remove any - characters, and import library via Arduino menu Sketch->Import Library->Add Library
+* After adding, you'll find File->Examples->SkynetClient
 
 ##Examples
-Find full examples in the File->Examples->SkynetClient menu but generally, theres 3 ways to use: onMessage, log message,  or bind.
+Find full examples in the File->Examples->SkynetClient menu but generally, theres 3 ways to use: onMessage, log message, or bind.
 ###onMessage
 The simplest method is to register a function to be called when Skynet receives a message for your device:
 ```cpp
 void setup()
 {
-  ...
+  //...
   skynetclient.setMessageDelegate(onMessage);
 }
 void loop(){
@@ -43,7 +43,7 @@ Then you can do whatever you want with that message. You can even grab a third p
 ```cpp
 void onMessage(const char * const data) {
 
-  Serial.print("Parse ");
+  Serial.print("Parse: ");
   Serial.println(data);
 
 }
@@ -52,7 +52,7 @@ void onMessage(const char * const data) {
 Even simpler than that is to just send data to Skynet with the logMessage command: 
 ```cpp
 void loop(){
-    //Craft a string with your data like "light":"423","temp":"356"
+  //Craft a string with your data like "light":"423","temp":"356"
   skynetclient.logMessage(message);
 }
 ```
@@ -66,7 +66,7 @@ void loop() {
   	Serial.print(skynetclient.read());
 }
 ```
-This can be seen in our Firmata sketch paired with the Node example in the node_client directory. (see also: https://www.npmjs.org/package/skynet-serial)
+This can be seen in our Firmata sketch paired with the Node example in the node_client directory. (see also: https://www.npmjs.org/package/skynet-serial) NOTE: This sketch requires the new Arduino 1.5 IDE! http://arduino.cc/en/main/software
 
 LICENSE
 -------
