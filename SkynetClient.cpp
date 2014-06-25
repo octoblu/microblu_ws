@@ -721,3 +721,30 @@ void SkynetClient::logMessage(char const *object)
 	xmit((char)255);
 	DBGCN();
 }
+
+void SkynetClient::logMessage(String messageString)
+{
+    char message[messageString.length()+1];
+    messageString.toCharArray(message, messageString.length()+1);
+
+    char temp[UUIDSIZE];
+
+    DBGCS("Sending(Log): ");
+
+    xmit((char)0);
+    xmit(EMIT);
+    xmit(FLOG1);
+    xmit(message);
+    xmit(FLOG2);
+    getUuid(temp);
+
+    xmit(temp);
+    xmit(FIDENTIFY3);
+    
+    getToken(temp);
+    
+    xmit(temp);
+    xmit(FCLOSE1);
+    xmit((char)255);
+    DBGCN();
+}

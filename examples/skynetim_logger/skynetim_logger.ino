@@ -73,13 +73,11 @@ void loop() {
     Serial.println(uuid);   
   }
 
-  String messageString = "\"light\":" + String(int(analogRead(A0))) + ",\"temp\":" + String(int(analogRead(A1)));
-  char message[messageString.length()+1];
-  messageString.toCharArray(message, messageString.length()+1);
-  
   //message to log MUST be comma seperated key value pair(s) and may
   //not be be an object or array
   //looks like "light":"423","temp":"356"
-  skynetclient.logMessage(message);
+  String messageString = "\"light\":" + String(int(analogRead(A0))) + ",\"temp\":" + String(int(analogRead(A1)));
+  
+  skynetclient.logMessage(messageString);
   delay(1000);
 }

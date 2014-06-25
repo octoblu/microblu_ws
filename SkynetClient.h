@@ -97,6 +97,7 @@ class SkynetClient : public Stream {
 		void setMessageDelegate(MessageDelegate messageDelegate);
 		void sendMessage(const char* device, char const *object);
 		void logMessage(char const *object);
+		void logMessage(String object);
 
 		int connect(IPAddress ip, uint16_t port);
 	    int connect(const char *host, uint16_t port);
