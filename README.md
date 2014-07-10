@@ -1,3 +1,5 @@
+#SKYNET MAIN HAS TRANSITIONED TO SOCKETIO 1.0, making this repo no longer functional. We may update in the future but for now please see our new MQTT client https://github.com/skynetim/skynetos_mqtt
+
 ```
  SSSSS  kk                            tt
 SS      kk  kk yy   yy nn nnn    eee  tt
